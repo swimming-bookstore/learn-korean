@@ -1,0 +1,94 @@
+.karaoke-play {
+  margin: 0 0 0.45rem;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.karaoke-play .play,
+.karaoke-play .mode {
+  font: 13px/1.2 system-ui, sans-serif;
+  border: 0;
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+}
+
+.karaoke-play .play {
+  background: #141210;
+  color: #fff;
+}
+
+.karaoke-play .mode {
+  background: #eee;
+  color: #141210;
+}
+
+.karaoke {
+  display: none;
+}
+
+.stage.record .karaoke {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  margin: 2vh 0 0;
+  width: 100%;
+  max-width: none;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.stage.record .karaoke-clip {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.stage.record .karaoke .sec {
+  margin: 0.9rem 0 0.4rem;
+  font: 12px/1.2 system-ui, sans-serif;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8a8378;
+}
+
+.stage.record .karaoke .sec:first-child {
+  margin-top: 0;
+}
+
+.stage.record .karaoke .line {
+  display: block;
+  margin: 0 0 0.7rem;
+  padding: 0.22rem 0.4rem;
+  color: #c4bbae;
+}
+
+.stage.record .karaoke .line.now {
+  color: #141210;
+  background: #ffe58a;
+}
+
+.stage.record .karaoke .ko {
+  display: block;
+  font-weight: 700;
+  font-size: clamp(1.7rem, 7.2vw, 2.7rem);
+  line-height: 1.28;
+  letter-spacing: -0.03em;
+  word-break: keep-all;
+}
+
+.stage.record .karaoke .en {
+  display: block;
+  margin-top: 0.14rem;
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: clamp(1.15rem, 4.8vw, 1.55rem);
+  font-weight: 400;
+  color: #8a8378;
+}
+
+.stage.record .karaoke .line.now .en {
+  color: #3f3a34;
+}
