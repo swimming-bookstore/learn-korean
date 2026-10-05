@@ -75,19 +75,36 @@ impl Script {
 /// Vocabulary cards, then grammar. Sentence stays on the plate.
 pub fn compile(lesson: &Lesson, timing: Timing) -> Script {
     let mut lines = Vec::new();
+    let mut from = 0;
     for item in lesson.vocab {
-        lines.push(card_line("Vocabulary", item, timing.card_ms, lesson.korean));
+        let (line, next) = card_line("Vocabulary", item, timing.card_ms, lesson.korean, from);
+        from = next;
+        lines.push(line);
     }
+    from = 0;
     for item in lesson.grammar {
-        lines.push(card_line("Grammar", item, timing.card_ms, lesson.korean));
+        let (line, next) = card_line("Grammar", item, timing.card_ms, lesson.korean, from);
+        from = next;
+        lines.push(line);
     }
     Script { lines }
 }
 
-fn card_line(section: &'static str, item: &Item, dur: u32, sentence: &str) -> Line {
+fn card_line(
+    section: &'static str,
+    item: &Item,
+    dur: u32,
+    sentence: &str,
+    from: usize,
+) -> (Line, usize) {
+    let span = span_in(sentence, item.word, from);
+    // Next search starts on this match, not after it. Ending on `매` lands
+    // inside `를`, and a cursor there hides `들` in `드는`.
+    let next = span.map(|(a, _)| a).unwrap_or(from);
+    (
     Line {
         section,
-        span: span_in(sentence, item.word),
+        span,
         tokens: vec![
             Token {
                 text: item.word.to_string(),
@@ -100,14 +117,18 @@ fn card_line(section: &'static str, item: &Item, dur: u32, sentence: &str) -> Li
                 dur_ms: 0,
             },
         ],
-    }
+    },
+    next,
+    )
 }
 
 /// Every Hangul/Latin/digit run in the card label, joined across spaces.
 /// `통과 이후` covers both words; `작품은` beats a bare `작품`. Hanja glosses are skipped.
 /// A dictionary verb (`만들다`) highlights its stem when the sentence uses a form (`만들어진`).
-fn span_in(sentence: &str, label: &str) -> Option<(usize, usize)> {
+/// Search starts at `from` so a later `들` is not the plural in `교사들`.
+fn span_in(sentence: &str, label: &str, from: usize) -> Option<(usize, usize)> {
     let sentence = sentence.trim();
+    let from = from.min(sentence.len());
     let mut start: Option<usize> = None;
     let mut end = 0usize;
     let chars: Vec<(usize, char)> = label.char_indices().collect();
@@ -125,16 +146,38 @@ fn span_in(sentence: &str, label: &str) -> Option<(usize, usize)> {
             end_i += 1;
         }
         let needle = &label[byte..end_byte];
-        if let Some(at) = sentence.find(needle) {
-            cover(at, at + needle.len(), &mut start, &mut end);
-        } else if let Some(stem) = verb_stem(needle) {
-            if let Some(at) = sentence.find(stem) {
-                cover(at, at + stem.len(), &mut start, &mut end);
-            }
+        let hit = find_from(sentence, needle, from).or_else(|| {
+            let stem = verb_stem(needle)?;
+            // Whole sentence: `from` can sit inside the next syllable (`매` ends
+            // on the first byte of `를`), which hides `들` in `드는`.
+            sentence.rfind(stem).filter(|at| *at + stem.len() > from)
+        });
+        if let Some(at) = hit {
+            let to = if sentence[at..].starts_with(needle) {
+                at + needle.len()
+            } else {
+                at + verb_stem(needle).unwrap_or(needle).len()
+            };
+            cover(at, char_boundary_at_or_before(sentence, to), &mut start, &mut end);
         }
         i = end_i;
     }
     start.map(|s| (s, end))
+}
+
+fn find_from(sentence: &str, needle: &str, from: usize) -> Option<usize> {
+    let from = char_boundary_at_or_before(sentence, from);
+    sentence[from..].find(needle).map(|rel| from + rel)
+}
+
+fn char_boundary_at_or_before(s: &str, mut i: usize) -> usize {
+    if i > s.len() {
+        i = s.len();
+    }
+    while i > 0 && !s.is_char_boundary(i) {
+        i -= 1;
+    }
+    i
 }
 
 fn cover(at: usize, to: usize, start: &mut Option<usize>, end: &mut usize) {
@@ -232,5 +275,50 @@ mod tests {
             .unwrap();
         let (a, b) = last.span.unwrap();
         assert_eq!(&lesson.korean[a..b], "통과 이후");
+    }
+
+    #[test]
+    fn day_two_vocab_follows_the_sentence() {
+        let lesson = crate::content::get(2, 2).unwrap();
+        let script = compile(lesson, Timing::default());
+        let vocab: Vec<_> = script
+            .lines
+            .iter()
+            .take_while(|l| l.section == "Vocabulary")
+            .map(|l| l.word().unwrap_or("").to_string())
+            .collect();
+        assert_eq!(
+            vocab,
+            ["교사 敎師", "원칙 原則", "더 이상", "학생 學生", "매", "들다", "일", "금지 禁止"]
+                .map(str::to_string)
+        );
+        let ban = script
+            .lines
+            .iter()
+            .find(|l| l.word() == Some("금지 禁止"))
+            .unwrap();
+        let (a, b) = ban.span.unwrap();
+        assert_eq!(&lesson.korean[a..b], "금지");
+    }
+
+    #[test]
+    fn day_two_grammar_hits_the_sentence() {
+        let lesson = crate::content::get(2, 2).unwrap();
+        let script = compile(lesson, Timing::default());
+        let expect = [
+            ("교사들은", "교사들은"),
+            ("원칙적으로", "원칙적으로"),
+            ("더 이상", "더 이상"),
+            ("학생에게", "학생에게"),
+            ("매를", "매를"),
+            ("드는", "드는"),
+            ("일이", "일이"),
+            ("금지되었다", "금지되었다"),
+        ];
+        for (word, span) in expect {
+            let line = script.lines.iter().find(|l| l.word() == Some(word)).unwrap();
+            let (a, b) = line.span.unwrap();
+            assert_eq!(&lesson.korean[a..b], span, "{word}");
+        }
     }
 }

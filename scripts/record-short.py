@@ -29,7 +29,7 @@ PAPER = "0xF6F1E8"
 FPS = 30
 SERIES = {
     "toesa": (1, list(range(1, 32))),
-    "chamgyoyuk": (2, [0, 1]),
+    "chamgyoyuk": (2, [0, 1, 2]),
 }
 
 
