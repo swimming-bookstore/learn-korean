@@ -6,7 +6,7 @@ use leptos::ev;
 use leptos::prelude::*;
 use wasm_bindgen::JsValue;
 
-/// `#/2` is series 2 episode 0. `#/2/1` is episode 1.
+/// `#/2` is series 2 episode 0. `#/2/1` is episode 1. `#/2/2` is episode 2.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct Route {
     series: u16,

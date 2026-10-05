@@ -6,7 +6,7 @@ read the lesson, or Play / `?record=1` for a 9:16 YouTube Short.
 
 Phrase notes follow [퇴사할게여](https://github.com/whs-dot-hk/i-m-gonna-toesa):
 the line, then **vocabulary**, then **grammar**. Series so far: `#/1` 퇴사할게여
-(episodes 1–31), `#/2` 참교육 (00, then 01).
+(episodes 1–31), `#/2` 참교육 (00, then 01, 02).
 
 ```bash
 trunk serve
@@ -34,7 +34,7 @@ Two modes, like Euclid:
   plate; the vocab list stays on screen and gold walks one row, then grammar.
 
 A new day is a `Lesson` in `src/content/`. Hash `#/1/12` is 퇴사할게여 episode 12.
-Hash `#/2` and `#/2/0` are 참교육 00. `#/2/1` is 참교육 01.
+Hash `#/2` and `#/2/0` are 참교육 00. `#/2/1` is 참교육 01. `#/2/2` is 참교육 02.
 
 YouTube: upload `docs/toesa-dayNN.mp4` or `docs/chamgyoyuk-dayNN.mp4` as a Short.
 Title idea: `1 · 퇴사할게여 | Learn Korean`.
