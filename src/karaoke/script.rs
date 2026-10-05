@@ -103,46 +103,43 @@ fn card_line(section: &'static str, item: &Item, dur: u32, sentence: &str) -> Li
     }
 }
 
-/// Longest Hangul/Latin run in the card label that occurs in the sentence.
-/// `작품은` wins over `작품`; Hanja glosses are skipped.
+/// Every Hangul/Latin/digit run in the card label, joined across spaces.
+/// `통과 이후` covers both words; `작품은` beats a bare `작품`. Hanja glosses are skipped.
 /// A dictionary verb (`만들다`) highlights its stem when the sentence uses a form (`만들어진`).
 fn span_in(sentence: &str, label: &str) -> Option<(usize, usize)> {
     let sentence = sentence.trim();
-    let mut best: Option<(usize, usize)> = None;
-    let mut best_len = 0usize;
-    for (start, ch) in label.char_indices() {
+    let mut start: Option<usize> = None;
+    let mut end = 0usize;
+    let chars: Vec<(usize, char)> = label.char_indices().collect();
+    let mut i = 0;
+    while i < chars.len() {
+        let (byte, ch) = chars[i];
         if !is_ko_or_latin(ch) {
+            i += 1;
             continue;
         }
-        let mut end = start + ch.len_utf8();
-        for c in label[end..].chars() {
-            if is_ko_or_latin(c) {
-                end += c.len_utf8();
-            } else {
-                break;
+        let mut end_i = i + 1;
+        let mut end_byte = byte + ch.len_utf8();
+        while end_i < chars.len() && is_ko_or_latin(chars[end_i].1) {
+            end_byte = chars[end_i].0 + chars[end_i].1.len_utf8();
+            end_i += 1;
+        }
+        let needle = &label[byte..end_byte];
+        if let Some(at) = sentence.find(needle) {
+            cover(at, at + needle.len(), &mut start, &mut end);
+        } else if let Some(stem) = verb_stem(needle) {
+            if let Some(at) = sentence.find(stem) {
+                cover(at, at + stem.len(), &mut start, &mut end);
             }
         }
-        let needle = &label[start..end];
-        consider(sentence, needle, &mut best, &mut best_len);
-        if let Some(stem) = verb_stem(needle) {
-            consider(sentence, stem, &mut best, &mut best_len);
-        }
+        i = end_i;
     }
-    best
+    start.map(|s| (s, end))
 }
 
-fn consider(sentence: &str, needle: &str, best: &mut Option<(usize, usize)>, best_len: &mut usize) {
-    let n = needle.chars().count();
-    if n == 0 || n < *best_len {
-        return;
-    }
-    let Some(at) = sentence.find(needle) else {
-        return;
-    };
-    if n > *best_len || best.is_none_or(|(b, _)| at < b) {
-        *best = Some((at, at + needle.len()));
-        *best_len = n;
-    }
+fn cover(at: usize, to: usize, start: &mut Option<usize>, end: &mut usize) {
+    *start = Some(start.map_or(at, |s| s.min(at)));
+    *end = (*end).max(to);
 }
 
 fn is_ko_or_latin(c: char) -> bool {
@@ -222,5 +219,18 @@ mod tests {
             .unwrap();
         let (a, b) = make.span.unwrap();
         assert_eq!(&lesson.korean[a..b], "만들");
+    }
+
+    #[test]
+    fn grammar_phrase_covers_every_word() {
+        let lesson = crate::content::get(2, 1).unwrap();
+        let script = compile(lesson, Timing::default());
+        let last = script
+            .lines
+            .iter()
+            .find(|l| l.word() == Some("통과 이후"))
+            .unwrap();
+        let (a, b) = last.span.unwrap();
+        assert_eq!(&lesson.korean[a..b], "통과 이후");
     }
 }
