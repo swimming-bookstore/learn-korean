@@ -71,6 +71,10 @@
   background: #ffe58a;
 }
 
+.stage.record .karaoke .line.now.gram {
+  background: #b7d7f5;
+}
+
 .stage.record .karaoke .ko {
   display: block;
   font-weight: 700;

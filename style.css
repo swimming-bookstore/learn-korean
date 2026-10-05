@@ -190,6 +190,22 @@ footer {
   line-height: 1.28;
 }
 
+.stage.record .plate .ko-line .dim {
+  color: var(--ink);
+}
+
+.stage.record .plate .ko-line .hit {
+  background: #ffe58a;
+  color: #141210;
+  border-radius: 0.08em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.stage.record .plate .ko-line .hit.gram {
+  background: #b7d7f5;
+}
+
 .stage.record .plate .en-line {
   margin: 0.45rem 0 0;
   max-width: none;

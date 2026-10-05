@@ -1,5 +1,6 @@
 use super::player::Player;
 use super::script::{Line, Script};
+use leptos::either::Either;
 use leptos::html;
 use leptos::prelude::*;
 use wasm_bindgen::JsCast;
@@ -92,6 +93,42 @@ pub fn KaraokeRead(script: Script) -> impl IntoView {
     }
 }
 
+/// Sentence above the list. Gold walks the matching stretch with the current card.
+#[component]
+pub fn KaraokePlate(korean: &'static str, meaning: &'static str, script: Script, player: Player) -> impl IntoView {
+    let plate_s = script.clone();
+    view! {
+        <div class="plate">
+            <p class="ko-line">
+                {move || {
+                    let span = cur_line(&plate_s, player)
+                        .and_then(|li| plate_s.lines.get(li))
+                        .and_then(|l| l.span);
+                    let grammar = cur_line(&plate_s, player)
+                        .and_then(|li| plate_s.lines.get(li))
+                        .is_some_and(|l| l.section == "Grammar");
+                    paint(korean, span, grammar)
+                }}
+            </p>
+            <p class="en-line">{meaning}</p>
+        </div>
+    }
+}
+
+fn paint(korean: &str, span: Option<(usize, usize)>, grammar: bool) -> impl IntoView {
+    let Some((a, b)) = span else {
+        return Either::Left(korean.to_string());
+    };
+    if !korean.is_char_boundary(a) || !korean.is_char_boundary(b) || a >= b || b > korean.len() {
+        return Either::Left(korean.to_string());
+    }
+    Either::Right(view! {
+        <span class="dim">{korean[..a].to_string()}</span>
+        <span class="hit" class:gram=grammar>{korean[a..b].to_string()}</span>
+        <span class="dim">{korean[b..].to_string()}</span>
+    })
+}
+
 /// Record: vocab + grammar on one page; meaning under the word; gold walks.
 #[component]
 pub fn KaraokeLyrics(script: Script, player: Player) -> impl IntoView {
@@ -129,6 +166,7 @@ pub fn KaraokeLyrics(script: Script, player: Player) -> impl IntoView {
                         <div
                             class="line"
                             class:now=move || cur_line(&cur_s, player) == Some(li)
+                            class:gram=line.section == "Grammar"
                         >
                             <span class="ko">{line.word().unwrap_or("").to_string()}</span>
                             {line.cite().map(|g| view! { <span class="en">{g.to_string()}</span> })}

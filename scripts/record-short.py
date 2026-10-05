@@ -27,8 +27,10 @@ OUT_W = 1080
 OUT_H = 1920
 PAPER = "0xF6F1E8"
 FPS = 30
-SERIES = "toesa"
-DAYS = list(range(1, 32))
+SERIES = {
+    "toesa": (1, list(range(1, 32))),
+    "chamgyoyuk": (2, [0, 1]),
+}
 
 
 def free_port() -> int:
@@ -82,12 +84,12 @@ def scale_up(src: Path, dest: Path) -> None:
     tmp.replace(dest)
 
 
-def record_day(day: int, series: str, port: int, cdp: int, hold: float) -> Path:
-    slug = slug_for(series, day)
+def record_day(series_n: int, episode: int, series: str, port: int, cdp: int, hold: float) -> Path:
+    slug = slug_for(series, episode)
     raw = DOCS / f"{slug}.raw.mp4"
     out = DOCS / f"{slug}.mp4"
     title = f"learn-korean-{slug}"
-    url = f"http://127.0.0.1:{port}/index.html?record=1&autoplay=1#/{day}"
+    url = f"http://127.0.0.1:{port}/index.html?record=1&autoplay=1#/{series_n}/{episode}"
     rec = RecordSession(
         url=url,
         out=raw,
@@ -128,9 +130,9 @@ def record_day(day: int, series: str, port: int, cdp: int, hold: float) -> Path:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--day", type=int, default=0)
+    parser.add_argument("--day", type=int, default=0, help="episode within --series")
     parser.add_argument("--all", action="store_true")
-    parser.add_argument("--series", default=SERIES)
+    parser.add_argument("--series", default="toesa", choices=sorted(SERIES))
     parser.add_argument("--hold", type=float, default=0, help="seconds; 0 = wait for done")
     parser.add_argument("--port", type=int, default=0)
     parser.add_argument("--cdp", type=int, default=9333)
@@ -143,12 +145,13 @@ def main() -> None:
     port = args.port or free_port()
     httpd = serve(port)
     if args.all:
-        days = DAYS
+        jobs = [(n, ep, name) for name, (n, eps) in SERIES.items() for ep in eps]
     else:
-        days = [args.day or 1]
+        series_n, eps = SERIES[args.series]
+        jobs = [(series_n, args.day or eps[0], args.series)]
     try:
-        for i, day in enumerate(days):
-            record_day(day, args.series, port, args.cdp + i, args.hold)
+        for i, (series_n, episode, name) in enumerate(jobs):
+            record_day(series_n, episode, name, port, args.cdp + i, args.hold)
             time.sleep(0.4)
     finally:
         httpd.shutdown()

@@ -6,4 +6,4 @@ mod ui;
 
 pub use player::Player;
 pub use script::{compile, Timing};
-pub use ui::{KaraokeLyrics, KaraokePlay, KaraokeRead};
+pub use ui::{KaraokeLyrics, KaraokePlay, KaraokeRead, KaraokePlate};
