@@ -1,14 +1,15 @@
 use super::{v, Item, Lesson};
 
 const fn lesson(
-    day: u16,
+    episode: u16,
     korean: &'static str,
     meaning: &'static str,
     vocab: &'static [Item],
     grammar: &'static [Item],
 ) -> Lesson {
     Lesson {
-        day,
+        series_n: 1,
+        episode,
         series: "퇴사할게여",
         korean,
         meaning,
