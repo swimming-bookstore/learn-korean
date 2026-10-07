@@ -1,4 +1,4 @@
-use super::{v, Item, Lesson};
+use super::{v, vh, Item, Lesson};
 
 const fn lesson(
     episode: u16,
@@ -24,7 +24,7 @@ pub const LESSONS: &[Lesson] = &[
         "퇴사할게여",
         "I’m gonna quit~",
         &[
-            v("퇴사하다 退社", "quit a company job"),
+            vh("퇴사하다", "退社", "quit a company job"),
             v("−ㄹ게", "I decided / I promise"),
             v("여", "cute 요"),
         ],
@@ -35,7 +35,7 @@ pub const LESSONS: &[Lesson] = &[
         "퇴사할게요",
         "I’ll quit.",
         &[
-            v("퇴사하다 退社", "to resign"),
+            vh("퇴사하다", "退社", "to resign"),
             v("−ㄹ게요", "polite promise"),
         ],
         &[v("하 + ㄹ게요", "I will (decision)")],
@@ -63,9 +63,9 @@ pub const LESSONS: &[Lesson] = &[
         "원래 이렇게 열심히",
         "I was never going to live this hard…",
         &[
-            v("원래 原來", "originally / all along"),
+            vh("원래", "原來", "originally / all along"),
             v("이렇게", "like this"),
-            v("열심히 熱心", "hard / diligently"),
+            vh("열심히", "熱心", "hard / diligently"),
         ],
         &[v("이렇게 열심히", "this hard (line continues)")],
     ),
@@ -75,7 +75,7 @@ pub const LESSONS: &[Lesson] = &[
         "…I never meant to live like that, you see.",
         &[
             v("살다", "to live"),
-            v("생각 生覺", "thought / plan"),
+            vh("생각", "生覺", "thought / plan"),
             v("없다", "not have"),
             v("−었거든요", "past + you see"),
         ],
@@ -100,8 +100,8 @@ pub const LESSONS: &[Lesson] = &[
         "수백 번을 참았거든요",
         "I held it in hundreds of times, you see.",
         &[
-            v("수백 數百", "hundreds"),
-            v("번 番", "times"),
+            vh("수백", "數百", "hundreds"),
+            vh("번", "番", "times"),
             v("을", "object"),
             v("참다", "endure / hold in"),
             v("−았거든요", "past + you see"),
@@ -136,7 +136,7 @@ pub const LESSONS: &[Lesson] = &[
         "Everyone, goodbye. (She’s the one leaving.)",
         &[
             v("모두", "everyone"),
-            v("안녕히 安寧", "peacefully"),
+            vh("안녕히", "安寧", "peacefully"),
             v("계세요", "please stay"),
         ],
         &[
@@ -150,8 +150,8 @@ pub const LESSONS: &[Lesson] = &[
         "So what if I regret it while I’m young?",
         &[
             v("그래", "yeah / so"),
-            v("이팔청춘 二八靑春", "youth (16–25)"),
-            v("후회하다 後悔", "to regret"),
+            vh("이팔청춘", "二八靑春", "youth (16–25)"),
+            vh("후회하다", "後悔", "to regret"),
             v("−면", "if"),
             v("어때요", "so what / how is it"),
         ],
@@ -162,9 +162,9 @@ pub const LESSONS: &[Lesson] = &[
         "당장 저 문밖으로 떠나요",
         "Leave out that door right now.",
         &[
-            v("당장 當場", "right away"),
+            vh("당장", "當場", "right away"),
             v("저", "that over there"),
-            v("문 門", "door"),
+            vh("문", "門", "door"),
             v("밖", "outside"),
             v("−으로", "toward"),
             v("떠나다", "to leave"),
@@ -192,7 +192,7 @@ pub const LESSONS: &[Lesson] = &[
         "결국 우린 모두 할머니가 될 거고",
         "In the end we’ll all be grandmas, and…",
         &[
-            v("결국 結局", "in the end"),
+            vh("결국", "結局", "in the end"),
             v("우리", "we"),
             v("우린", "우리는"),
             v("모두", "all"),
@@ -224,7 +224,7 @@ pub const LESSONS: &[Lesson] = &[
         "It was a romantic day",
         "It was a romantic day.",
         &[
-            v("romantic 浪漫", "낭만"),
+            vh("romantic", "浪漫", "낭만"),
             v("day", "하루"),
         ],
         &[v("English line", "leave it in English")],
@@ -246,7 +246,7 @@ pub const LESSONS: &[Lesson] = &[
         "I’ve got time these days, you see.",
         &[
             v("요즘", "these days"),
-            v("시간 時間", "time"),
+            vh("시간", "時間", "time"),
             v("좀", "a bit"),
             v("많다", "be a lot"),
             v("−거든요", "you see"),
@@ -259,12 +259,12 @@ pub const LESSONS: &[Lesson] = &[
         "I won’t cancel plans like I used to, right?",
         &[
             v("이제", "from now on"),
-            v("전 前", "before"),
+            vh("전", "前", "before"),
             v("−처럼", "like"),
-            v("절대로 絕對", "never"),
-            v("약속 約束", "appointment / plans"),
-            v("취소하다 取消", "cancel"),
-            v("일 事", "a case / matter"),
+            vh("절대로", "絕對", "never"),
+            vh("약속", "約束", "appointment / plans"),
+            vh("취소하다", "取消", "cancel"),
+            vh("일", "事", "a case / matter"),
             v("없다", "there isn’t"),
             v("−죠", "right?"),
         ],
@@ -292,7 +292,7 @@ pub const LESSONS: &[Lesson] = &[
         "여행 갈까요",
         "Shall we travel?",
         &[
-            v("여행 旅行", "trip"),
+            vh("여행", "旅行", "trip"),
             v("가다", "go"),
             v("−ㄹ까요", "shall we?"),
         ],
@@ -315,9 +315,9 @@ pub const LESSONS: &[Lesson] = &[
         "전 세계 일주하기",
         "Go around the world.",
         &[
-            v("전 全", "whole"),
-            v("세계 世界", "world"),
-            v("일주하다 一周", "go around"),
+            vh("전", "全", "whole"),
+            vh("세계", "世界", "world"),
+            vh("일주하다", "一周", "go around"),
             v("−기", "verb as noun"),
         ],
         &[v("일주하기", "going around")],
@@ -327,9 +327,9 @@ pub const LESSONS: &[Lesson] = &[
         "소설책 작가 되기",
         "Become a novelist.",
         &[
-            v("소설 小說", "novel"),
-            v("책 冊", "book"),
-            v("작가 作家", "writer"),
+            vh("소설", "小說", "novel"),
+            vh("책", "冊", "book"),
+            vh("작가", "作家", "writer"),
             v("되다", "become"),
             v("−기", "verb as noun"),
         ],
@@ -342,8 +342,8 @@ pub const LESSONS: &[Lesson] = &[
         &[
             v("마음", "heart / mind"),
             v("맘", "마음 short"),
-            v("편하다 便", "comfortable"),
-            v("편히 便", "at ease"),
+            vh("편하다", "便", "comfortable"),
+            vh("편히", "便", "at ease"),
             v("노래", "song"),
             v("부르다", "sing"),
             v("−기", "verb as noun"),
@@ -372,7 +372,7 @@ pub const LESSONS: &[Lesson] = &[
         "…even if they throw you a bit.",
         &[
             v("조금", "a little"),
-            v("당황스럽다 唐慌", "awkward / flustered"),
+            vh("당황스럽다", "唐慌", "awkward / flustered"),
             v("−어도", "even if"),
         ],
         &[v("당황스러워도", "even if awkward")],
@@ -399,7 +399,7 @@ pub const LESSONS: &[Lesson] = &[
         "Even if a day of regret comes someday…",
         &[
             v("언젠가", "someday"),
-            v("후회하다 後悔", "regret"),
+            vh("후회하다", "後悔", "regret"),
             v("날", "day"),
             v("이", "subject"),
             v("오다", "come"),
@@ -415,7 +415,7 @@ pub const LESSONS: &[Lesson] = &[
         "낭만이라 할 테죠",
         "I’ll still call it romance.",
         &[
-            v("낭만 浪漫", "romance"),
+            vh("낭만", "浪漫", "romance"),
             v("−이라", "as / called"),
             v("하다", "call / say"),
             v("−ㄹ 테다", "I will / I bet"),
@@ -433,7 +433,7 @@ pub const LESSONS: &[Lesson] = &[
         &[
             v("나", "I"),
             v("는", "topic"),
-            v("낭만적인 浪漫的", "romantic"),
+            vh("낭만적인", "浪漫的", "romantic"),
             v("할머니", "grandma"),
             v("되다", "become"),
             v("−어서", "and then"),

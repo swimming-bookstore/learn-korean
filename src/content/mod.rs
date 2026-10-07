@@ -4,6 +4,8 @@ pub mod toesa;
 #[derive(Clone, Copy, Debug)]
 pub struct Item {
     pub word: &'static str,
+    /// Hanja shown beside the Korean word. 하다 is never written in hanja.
+    pub hanja: &'static str,
     pub meaning: &'static str,
 }
 
@@ -54,5 +56,17 @@ pub fn next_episode(series_n: u16, episode: u16) -> Option<(u16, u16)> {
 }
 
 pub const fn v(word: &'static str, meaning: &'static str) -> Item {
-    Item { word, meaning }
+    Item {
+        word,
+        hanja: "",
+        meaning,
+    }
+}
+
+pub const fn vh(word: &'static str, hanja: &'static str, meaning: &'static str) -> Item {
+    Item {
+        word,
+        hanja,
+        meaning,
+    }
 }
