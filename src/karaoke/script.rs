@@ -97,7 +97,7 @@ fn card_line(
     sentence: &str,
     from: usize,
 ) -> (Line, usize) {
-    let span = span_in(sentence, item.word, from);
+    let span = span_in(sentence, item.word, from, section);
     // Step past a finished syllable so the next card is not this one.
     // A stem match (`매` inside `매를`) ends mid-syllable; jump to the next
     // character so `들다` is not hidden inside `를`.
@@ -138,7 +138,7 @@ fn card_line(
 /// `통과 이후` covers both words; `작품은` beats a bare `작품`. Hanja glosses are skipped.
 /// A dictionary verb (`만들다`) highlights its stem when the sentence uses a form (`만들어진`).
 /// Search starts at `from` so a later `들` is not the plural in `교사들`.
-fn span_in(sentence: &str, label: &str, from: usize) -> Option<(usize, usize)> {
+fn span_in(sentence: &str, label: &str, from: usize, section: &str) -> Option<(usize, usize)> {
     let sentence = sentence.trim();
     let from = char_boundary_at_or_after(sentence, from.min(sentence.len()));
     let mut start: Option<usize> = None;
@@ -158,36 +158,40 @@ fn span_in(sentence: &str, label: &str, from: usize) -> Option<(usize, usize)> {
             end_i += 1;
         }
         let needle = &label[byte..end_byte];
-        let hit = find_from(sentence, needle, from)
-            .map(|at| (at, at + needle.len()))
-            .or_else(|| {
-                let stem = verb_stem(needle)?;
-                // A one-syllable stem (`놓`) may sit inside the previous card (`마음`).
-                let origin = if stem.chars().count() == 1 { 0 } else { from };
-                let at = find_from(sentence, stem, origin)?;
-                let to = at + stem.len();
-                if !stem_continues(sentence, to) {
-                    return None;
-                }
-                Some((at, to))
-            })
-            .or_else(|| {
-                // `유리하다` → `유리하게`: the 하다 verb surfaces without a bare `하`.
-                let root = hada_root(needle)?;
-                let at = find_from(sentence, root, from)?;
-                let to = at + root.len();
-                if !stem_continues(sentence, to) {
-                    return None;
-                }
-                Some((at, to))
-            })
-            .or_else(|| {
-                // `어렵다` → `어려워졌다`: ㅂ drops, so the spoken stem is `어려`.
-                let stem = verb_stem(needle)?;
-                let root = bieup_stem(stem)?;
-                let at = find_from(sentence, &root, from)?;
-                Some((at, at + root.len()))
-            });
+        let hit = if section == "Grammar" {
+            find_from(sentence, needle, from).map(|at| (at, at + needle.len()))
+        } else {
+            find_from(sentence, needle, from)
+                .map(|at| (at, at + needle.len()))
+                .or_else(|| {
+                    let stem = verb_stem(needle)?;
+                    // A one-syllable stem (`놓`) may sit inside the previous card (`마음`).
+                    let origin = if stem.chars().count() == 1 { 0 } else { from };
+                    let at = find_from(sentence, stem, origin)?;
+                    let to = at + stem.len();
+                    if !stem_continues(sentence, to) {
+                        return None;
+                    }
+                    Some((at, to))
+                })
+                .or_else(|| {
+                    // `유리하다` → `유리하게`: the 하다 verb surfaces without a bare `하`.
+                    let root = hada_root(needle)?;
+                    let at = find_from(sentence, root, from)?;
+                    let to = at + root.len();
+                    if !stem_continues(sentence, to) {
+                        return None;
+                    }
+                    Some((at, to))
+                })
+                .or_else(|| {
+                    // `어렵다` → `어려워졌다`: ㅂ drops, so the spoken stem is `어려`.
+                    let stem = verb_stem(needle)?;
+                    let root = bieup_stem(stem)?;
+                    let at = find_from(sentence, &root, from)?;
+                    Some((at, at + root.len()))
+                })
+        };
         if let Some((at, to)) = hit {
             cover(
                 at,
