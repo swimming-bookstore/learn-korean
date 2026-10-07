@@ -6,7 +6,7 @@ use leptos::ev;
 use leptos::prelude::*;
 use wasm_bindgen::JsValue;
 
-/// `#/2` is series 2 episode 0. `#/2/1` is episode 1. `#/2/2` is episode 2.
+/// `#/2` is series 2 episode 0. `#/2/1` is episode 1. `#/2/3` is episode 3.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct Route {
     series: u16,
@@ -166,7 +166,10 @@ fn wants_record() -> bool {
 fn read_route() -> Route {
     let loc = web_sys::window().map(|w| w.location());
     let Some(loc) = loc else {
-        return Route { series: 1, episode: 1 };
+        return Route {
+            series: 1,
+            episode: 1,
+        };
     };
     if let Ok(hash) = loc.hash() {
         if let Some(r) = parse_hash(&hash) {
@@ -178,7 +181,10 @@ fn read_route() -> Route {
             return r;
         }
     }
-    Route { series: 1, episode: 1 }
+    Route {
+        series: 1,
+        episode: 1,
+    }
 }
 
 fn parse_query(search: &str) -> Option<Route> {
@@ -279,7 +285,12 @@ fn write_route(route: Route, push: bool) {
 fn set_title(route: Route) {
     if let Some(doc) = web_sys::window().and_then(|w| w.document()) {
         let title = get(route.series, route.episode)
-            .map(|l| format!("{} {:02} · {} — Learn Korean", l.series, l.episode, l.korean))
+            .map(|l| {
+                format!(
+                    "{} {:02} · {} — Learn Korean",
+                    l.series, l.episode, l.korean
+                )
+            })
             .or_else(|| {
                 series_name(route.series)
                     .map(|name| format!("{name} {:02} — Learn Korean", route.episode))

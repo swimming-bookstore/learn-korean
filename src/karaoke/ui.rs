@@ -95,11 +95,16 @@ pub fn KaraokeRead(script: Script) -> impl IntoView {
 
 /// Sentence above the list. Gold walks the matching stretch with the current card.
 #[component]
-pub fn KaraokePlate(korean: &'static str, meaning: &'static str, script: Script, player: Player) -> impl IntoView {
+pub fn KaraokePlate(
+    korean: &'static str,
+    meaning: &'static str,
+    script: Script,
+    player: Player,
+) -> impl IntoView {
     let plate_s = script.clone();
     view! {
         <div class="plate">
-            <p class="ko-line">
+            <p class="ko-line" class:long={korean.chars().count() > 28}>
                 {move || {
                     let span = cur_line(&plate_s, player)
                         .and_then(|li| plate_s.lines.get(li))
