@@ -221,16 +221,6 @@ pub const LESSONS: &[Lesson] = &[
     ),
     lesson(
         15,
-        "It was a romantic day",
-        "It was a romantic day.",
-        &[
-            vh("romantic", "浪漫", "낭만"),
-            v("day", "하루"),
-        ],
-        &[v("English line", "leave it in English")],
-    ),
-    lesson(
-        16,
         "밥 먹을까요",
         "Shall we eat?",
         &[
@@ -241,7 +231,7 @@ pub const LESSONS: &[Lesson] = &[
         &[v("먹을까요", "shall we eat?")],
     ),
     lesson(
-        17,
+        16,
         "요즘 시간 좀 많거든요",
         "I’ve got time these days, you see.",
         &[
@@ -254,7 +244,7 @@ pub const LESSONS: &[Lesson] = &[
         &[v("많거든요", "I’ve got a lot, you see")],
     ),
     lesson(
-        18,
+        17,
         "이제 전처럼 절대로 약속 취소할 일은 없죠",
         "I won’t cancel plans like I used to, right?",
         &[
@@ -275,7 +265,7 @@ pub const LESSONS: &[Lesson] = &[
         ],
     ),
     lesson(
-        19,
+        18,
         "너 너 이거 또 거짓말하네",
         "Hey, you’re lying again.",
         &[
@@ -288,7 +278,7 @@ pub const LESSONS: &[Lesson] = &[
         &[v("거짓말하네", "(you’re) lying, I see")],
     ),
     lesson(
-        20,
+        19,
         "여행 갈까요",
         "Shall we travel?",
         &[
@@ -299,7 +289,7 @@ pub const LESSONS: &[Lesson] = &[
         &[v("갈까요", "shall we go?")],
     ),
     lesson(
-        21,
+        20,
         "버킷리스트가 있거든요",
         "I’ve got a bucket list, you see.",
         &[
@@ -311,7 +301,7 @@ pub const LESSONS: &[Lesson] = &[
         &[v("N가 있거든요", "I’ve got N, you see")],
     ),
     lesson(
-        22,
+        21,
         "전 세계 일주하기",
         "Go around the world.",
         &[
@@ -323,7 +313,7 @@ pub const LESSONS: &[Lesson] = &[
         &[v("일주하기", "going around")],
     ),
     lesson(
-        23,
+        22,
         "소설책 작가 되기",
         "Become a novelist.",
         &[
@@ -336,7 +326,7 @@ pub const LESSONS: &[Lesson] = &[
         &[v("되기", "becoming")],
     ),
     lesson(
-        24,
+        23,
         "맘 편히 노래 부르기",
         "Sing easy.",
         &[
@@ -354,7 +344,7 @@ pub const LESSONS: &[Lesson] = &[
         ],
     ),
     lesson(
-        25,
+        24,
         "내 이런 철없는 말이",
         "These childish words of mine…",
         &[
@@ -367,7 +357,7 @@ pub const LESSONS: &[Lesson] = &[
         &[v("철없는", "childish (modifies 말)")],
     ),
     lesson(
-        26,
+        25,
         "조금 당황스러워도",
         "…even if they throw you a bit.",
         &[
@@ -378,7 +368,7 @@ pub const LESSONS: &[Lesson] = &[
         &[v("당황스러워도", "even if awkward")],
     ),
     lesson(
-        27,
+        26,
         "오늘은 날 잡지는 말아요",
         "Don’t hold me back today.",
         &[
@@ -394,7 +384,7 @@ pub const LESSONS: &[Lesson] = &[
         ],
     ),
     lesson(
-        28,
+        27,
         "언젠가 후회하는 날이 와도",
         "Even if a day of regret comes someday…",
         &[
@@ -411,7 +401,7 @@ pub const LESSONS: &[Lesson] = &[
         ],
     ),
     lesson(
-        29,
+        28,
         "낭만이라 할 테죠",
         "I’ll still call it romance.",
         &[
@@ -427,7 +417,7 @@ pub const LESSONS: &[Lesson] = &[
         ],
     ),
     lesson(
-        30,
+        29,
         "나는 낭만적인 할머니가 되어서",
         "I’ll be a romantic grandma, and then…",
         &[
@@ -444,7 +434,7 @@ pub const LESSONS: &[Lesson] = &[
         ],
     ),
     lesson(
-        31,
+        30,
         "뒤돌아보곤 오늘 하루를",
         "I’d look back on this one day.",
         &[
