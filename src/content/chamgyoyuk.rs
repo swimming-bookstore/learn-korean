@@ -300,4 +300,20 @@ pub const LESSONS: &[Lesson] = &[
             v("벌어진다", "벌어지다 + ㄴ다 (occurs)"),
         ],
     ),
+    lesson(
+        12,
+        "한 톱스타의 스캔들로 인해",
+        "Because of a top star's scandal,",
+        &[
+            v("한", "one"),
+            v("톱스타", "a top star"),
+            v("스캔들", "a scandal"),
+            v("인하다", "to be due to"),
+        ],
+        &[
+            v("한", "한/MM (one)"),
+            v("톱스타의", "톱스타/NNG + 의/JKG (of a top star)"),
+            v("스캔들로 인해", "스캔들/NNG + 로/JKB + 인하/VV + 여/EC (because of a scandal)"),
+        ],
+    ),
 ];

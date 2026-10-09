@@ -164,6 +164,14 @@ fn span_in(sentence: &str, label: &str, from: usize, section: &str) -> Option<(u
             find_from(sentence, needle, from)
                 .map(|at| (at, at + needle.len()))
                 .or_else(|| {
+                    // `인하다` → `인해`: 하 + 여 contracts, so the stem `인하` is not written.
+                    // Try this before the bare stem, or `인` matches inside `인해`.
+                    let stem = verb_stem(needle)?;
+                    let written = ha_plus_yeo(stem)?;
+                    let at = find_from(sentence, &written, from)?;
+                    Some((at, at + written.len()))
+                })
+                .or_else(|| {
                     let stem = verb_stem(needle)?;
                     // A one-syllable stem (`놓`) may sit inside the previous card (`마음`).
                     let origin = if stem.chars().count() == 1 { 0 } else { from };
@@ -281,6 +289,15 @@ fn shown_word(item: &crate::content::Item) -> String {
     } else {
         format!("{} {gloss}", item.word)
     }
+}
+
+/// `인하` + 여 → `인해`. 하 contracts with 여, so the dictionary stem is not written.
+fn ha_plus_yeo(stem: &str) -> Option<String> {
+    let rest = stem.strip_suffix('하')?;
+    if rest.is_empty() {
+        return None;
+    }
+    Some(format!("{rest}해"))
 }
 
 /// `어렵` → `어려`. ㅂ-irregular adjectives surface as `어려워`, not `어렵`.
@@ -518,6 +535,29 @@ mod tests {
             ("그다지", "그다지"),
             ("많지 않았던", "많지 않았던"),
             ("것이다", "것이다"),
+        ];
+        for (word, span) in expect {
+            let line = script
+                .lines
+                .iter()
+                .find(|l| l.word() == Some(word))
+                .unwrap();
+            let shown = line.span.map(|(a, b)| &lesson.korean[a..b]).unwrap_or("NONE");
+            assert_eq!(shown, span, "{word}");
+        }
+    }
+
+    #[test]
+    fn day_twelve_scandal_cards_hit_the_sentence() {
+        let lesson = crate::content::get(2, 12).unwrap();
+        let script = compile(lesson, Timing::default());
+        let expect = [
+            ("한", "한"),
+            ("톱스타", "톱스타"),
+            ("스캔들", "스캔들"),
+            ("인하다", "인해"),
+            ("톱스타의", "톱스타의"),
+            ("스캔들로 인해", "스캔들로 인해"),
         ];
         for (word, span) in expect {
             let line = script

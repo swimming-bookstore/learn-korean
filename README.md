@@ -34,7 +34,7 @@ Two modes, like Euclid:
   plate; the vocab list stays on screen and gold walks one row, then grammar.
 
 A new day is a `Lesson` in `src/content/`. Hash `#/1/12` is 퇴사할게여 episode 12.
-Hash `#/2` and `#/2/0` are 참교육 00. `#/2/1` is 참교육 01. `#/2/2` is 참교육 02. `#/2/3` is 참교육 03.
+Hash `#/2` and `#/2/0` are 참교육 00. `#/2/1` is 참교육 01. `#/2/2` is 참교육 02. `#/2/3` is 참교육 03. `#/2/12` is 참교육 12.
 
 YouTube: upload `docs/toesa-dayNN.mp4` or `docs/chamgyoyuk-dayNN.mp4` as a Short.
 Title idea: `1 · 퇴사할게여 | Learn Korean`.
