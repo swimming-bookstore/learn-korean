@@ -302,13 +302,55 @@ pub const LESSONS: &[Lesson] = &[
     ),
     lesson(
         12,
-        "한 톱스타의 스캔들로 인해 언론의 관심이 연예계 쪽으로 집중되는 틈을 노려",
-        "Taking advantage of the gap while media attention focuses on the entertainment world because of a top star's scandal,",
+        "교육 붕괴의 심각성을 느낀",
+        "feeling the seriousness of the collapse of education",
+        &[
+            vh("교육", "敎育", "education"),
+            vh("붕괴", "崩壞", "collapse"),
+            vh("심각", "深刻", "grave"),
+            vh("성", "性", "-ness"),
+            v("느끼다", "to feel"),
+        ],
+        &[
+            v("교육 붕괴의", "교육/NNG 붕괴/NNG + 의/JKG (of the collapse of education)"),
+            v("심각성을", "심각/XR + 성/XSN + 을/JKO (the seriousness, object)"),
+            v("느낀", "느끼/VV + ㄴ/ETM (that one felt)"),
+        ],
+    ),
+    lesson(
+        13,
+        "국회와 교육부는",
+        "the National Assembly and the Ministry of Education",
+        &[
+            vh("국회", "國會", "the National Assembly"),
+            vh("교육부", "敎育部", "the Ministry of Education"),
+        ],
+        &[
+            v("국회와", "국회/NNG + 와/JC (the National Assembly, and)"),
+            v("교육부는", "교육부/NNG + 는/JX (the Ministry of Education, topic)"),
+        ],
+    ),
+    lesson(
+        14,
+        "한 톱스타의 스캔들로 인해",
+        "because of a top star's scandal",
         &[
             v("한", "one"),
             v("톱스타", "a top star"),
             v("스캔들", "a scandal"),
             v("인하다", "to be due to"),
+        ],
+        &[
+            v("한", "한/MM (one)"),
+            v("톱스타의", "톱스타/NNG + 의/JKG (of a top star)"),
+            v("스캔들로 인해", "스캔들/NNG + 로/JKB + 인하/VV + 여/EC (because of a scandal)"),
+        ],
+    ),
+    lesson(
+        15,
+        "언론의 관심이 연예계 쪽으로 집중되는 틈을 노려",
+        "seizing the gap while media attention focuses on the entertainment world",
+        &[
             vh("언론", "言論", "the press / the media"),
             vh("관심", "關心", "attention"),
             vh("연예", "演藝", "entertainment"),
@@ -320,9 +362,6 @@ pub const LESSONS: &[Lesson] = &[
             v("노리다", "to aim for / to seize"),
         ],
         &[
-            v("한", "한/MM (one)"),
-            v("톱스타의", "톱스타/NNG + 의/JKG (of a top star)"),
-            v("스캔들로 인해", "스캔들/NNG + 로/JKB + 인하/VV + 여/EC (because of a scandal)"),
             v("언론의", "언론/NNG + 의/JKG (of the press)"),
             v("관심이", "관심/NNG + 이/JKS (attention, subject)"),
             v("연예계 쪽으로", "연예/NNG + 계/NNG + 쪽/NNB + 으로/JKB (toward the entertainment world)"),
