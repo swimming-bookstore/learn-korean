@@ -159,9 +159,25 @@ fn span_in(sentence: &str, label: &str, from: usize, section: &str) -> Option<(u
         }
         let needle = &label[byte..end_byte];
         let hit = if section == "Grammar" {
-            find_from(sentence, needle, from).map(|at| (at, at + needle.len()))
+            find_from(sentence, needle, from)
+                .or_else(|| {
+                    // `계` is one syllable and may sit inside the previous card (`연예`).
+                    if needle.chars().count() == 1 {
+                        find_from(sentence, needle, 0)
+                    } else {
+                        None
+                    }
+                })
+                .map(|at| (at, at + needle.len()))
         } else {
             find_from(sentence, needle, from)
+                .or_else(|| {
+                    if needle.chars().count() == 1 {
+                        find_from(sentence, needle, 0)
+                    } else {
+                        None
+                    }
+                })
                 .map(|at| (at, at + needle.len()))
                 .or_else(|| {
                     // `인하다` → `인해`: 하 + 여 contracts, so the stem `인하` is not written.
@@ -198,6 +214,13 @@ fn span_in(sentence: &str, label: &str, from: usize, section: &str) -> Option<(u
                     let root = bieup_stem(stem)?;
                     let at = find_from(sentence, &root, from)?;
                     Some((at, at + root.len()))
+                })
+                .or_else(|| {
+                    // `노리다` → `노려`: ㅡ drops before 어, so the stem `노리` is not written.
+                    let stem = verb_stem(needle)?;
+                    let written = eu_plus_eo(stem)?;
+                    let at = find_from(sentence, &written, from)?;
+                    Some((at, at + written.len()))
                 })
         };
         if let Some((at, to)) = hit {
@@ -289,6 +312,15 @@ fn shown_word(item: &crate::content::Item) -> String {
     } else {
         format!("{} {gloss}", item.word)
     }
+}
+
+/// `노리` + 어 → `노려`. ㅡ drops before 어, so the dictionary stem is not written.
+fn eu_plus_eo(stem: &str) -> Option<String> {
+    let rest = stem.strip_suffix('리')?;
+    if rest.is_empty() {
+        return None;
+    }
+    Some(format!("{rest}려"))
 }
 
 /// `인하` + 여 → `인해`. 하 contracts with 여, so the dictionary stem is not written.
@@ -556,8 +588,22 @@ mod tests {
             ("톱스타", "톱스타"),
             ("스캔들", "스캔들"),
             ("인하다", "인해"),
+            ("언론 言論", "언론"),
+            ("관심 關心", "관심"),
+            ("연예 演藝", "연예"),
+            ("계", "계"),
+            ("쪽", "쪽"),
+            ("집중 集中", "집중"),
+            ("되다", "되"),
+            ("틈", "틈"),
+            ("노리다", "노려"),
             ("톱스타의", "톱스타의"),
             ("스캔들로 인해", "스캔들로 인해"),
+            ("언론의", "언론의"),
+            ("관심이", "관심이"),
+            ("연예계 쪽으로", "연예계 쪽으로"),
+            ("집중되는", "집중되는"),
+            ("틈을 노려", "틈을 노려"),
         ];
         for (word, span) in expect {
             let line = script
