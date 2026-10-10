@@ -155,8 +155,8 @@ pub const LESSONS: &[Lesson] = &[
     ),
     lesson(
         6,
-        "전 그 학생 머리카락 하나 건드린 적 없습니다! 그런데 제가 왜",
-        "I've never so much as touched that student's hair! So why am I",
+        "전 그 학생 머리카락 하나 건드린 적 없습니다! 그런데 제가 왜⋯",
+        "I've never so much as touched that student's hair! So why am I…",
         &[
             v("저", "I"),
             v("그", "that"),

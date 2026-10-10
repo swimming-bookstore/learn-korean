@@ -29,7 +29,7 @@ PAPER = "0xF6F1E8"
 FPS = 30
 SERIES = {
     "toesa": (1, list(range(1, 32))),
-    "chamgyoyuk": (2, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]),
+    "chamgyoyuk": (2, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]),
 }
 
 
@@ -84,6 +84,36 @@ def scale_up(src: Path, dest: Path) -> None:
     tmp.replace(dest)
 
 
+def fit_window(title: str, width: int, height: int) -> None:
+    """Chrome --app often ignores --window-size and grows past 640×960."""
+    from record import x11cap
+
+    x11 = x11cap.x11
+    x11.XResizeWindow.argtypes = [x11cap.c_void_p, x11cap.c_ulong, x11cap.c_uint, x11cap.c_uint]
+    x11.XResizeWindow.restype = x11cap.c_int
+    x11cap.ignore_x_errors()
+    dpy = x11.XOpenDisplay(None)
+    if not dpy:
+        raise SystemExit("cannot open X display")
+    wid = 0
+    for _ in range(40):
+        wid = x11cap.find_window(dpy, title)
+        if wid:
+            break
+        time.sleep(0.1)
+    if not wid:
+        x11cap.x11.XCloseDisplay(dpy)
+        raise SystemExit(f"window not found: {title}")
+    x11.XResizeWindow(dpy, wid, width, height)
+    x11.XFlush(dpy)
+    x11.XSync(dpy, 0)
+    time.sleep(0.35)
+    w, h = x11cap.geometry(dpy, wid)
+    x11.XCloseDisplay(dpy)
+    if w != width or h != height:
+        raise SystemExit(f"window stayed {w}x{h}, wanted {width}x{height}")
+
+
 def record_day(series_n: int, episode: int, series: str, port: int, cdp: int, hold: float) -> Path:
     slug = slug_for(series, episode)
     raw = DOCS / f"{slug}.raw.mp4"
@@ -108,6 +138,7 @@ def record_day(series_n: int, episode: int, series: str, port: int, cdp: int, ho
             25,
             "ready",
         )
+        fit_window(title, CAPTURE_W, CAPTURE_H)
         rec.start_capture()
         if hold > 0:
             rec.hold(hold)
