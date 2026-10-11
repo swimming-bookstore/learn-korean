@@ -29,7 +29,7 @@ PAPER = "0xF6F1E8"
 FPS = 30
 SERIES = {
     "toesa": (1, list(range(1, 32))),
-    "chamgyoyuk": (2, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]),
+    "chamgyoyuk": (2, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]),
 }
 
 
@@ -97,7 +97,7 @@ def fit_window(title: str, width: int, height: int) -> None:
         raise SystemExit("cannot open X display")
     wid = 0
     for _ in range(40):
-        wid = x11cap.find_window(dpy, title)
+        wid = x11cap.find_window(dpy, title, min_w=1, min_h=1)
         if wid:
             break
         time.sleep(0.1)
@@ -138,6 +138,8 @@ def record_day(series_n: int, episode: int, series: str, port: int, cdp: int, ho
             25,
             "ready",
         )
+        rec.eval(f"document.title = {title!r}")
+        time.sleep(0.4)
         fit_window(title, CAPTURE_W, CAPTURE_H)
         rec.start_capture()
         if hold > 0:
