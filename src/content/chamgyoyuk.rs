@@ -312,9 +312,9 @@ pub const LESSONS: &[Lesson] = &[
             v("느끼다", "to feel"),
         ],
         &[
-            v("교육 붕괴의", "교육/NNG 붕괴/NNG + 의/JKG (of the collapse of education)"),
-            v("심각성을", "심각/XR + 성/XSN + 을/JKO (the seriousness, object)"),
-            v("느낀", "느끼/VV + ㄴ/ETM (that one felt)"),
+            v("교육 붕괴의", "교육 붕괴 + 의 (of the collapse of education)"),
+            v("심각성을", "심각 + 성 + 을 (the seriousness, object)"),
+            v("느낀", "느끼다 + ㄴ (that one felt)"),
         ],
     ),
     lesson(
@@ -326,8 +326,8 @@ pub const LESSONS: &[Lesson] = &[
             vh("교육부", "敎育部", "the Ministry of Education"),
         ],
         &[
-            v("국회와", "국회/NNG + 와/JC (the National Assembly, and)"),
-            v("교육부는", "교육부/NNG + 는/JX (the Ministry of Education, topic)"),
+            v("국회와", "국회 + 와 (the National Assembly, and)"),
+            v("교육부는", "교육부 + 는 (the Ministry of Education, topic)"),
         ],
     ),
     lesson(
@@ -341,9 +341,9 @@ pub const LESSONS: &[Lesson] = &[
             v("인하다", "to be due to"),
         ],
         &[
-            v("한", "한/MM (one)"),
-            v("톱스타의", "톱스타/NNG + 의/JKG (of a top star)"),
-            v("스캔들로 인해", "스캔들/NNG + 로/JKB + 인하/VV + 여/EC (because of a scandal)"),
+            v("한", "한 (one)"),
+            v("톱스타의", "톱스타 + 의 (of a top star)"),
+            v("스캔들로 인해", "스캔들 + 로 + 인하다 + 여 (because of a scandal)"),
         ],
     ),
     lesson(
@@ -362,11 +362,11 @@ pub const LESSONS: &[Lesson] = &[
             v("노리다", "to aim for / to seize"),
         ],
         &[
-            v("언론의", "언론/NNG + 의/JKG (of the press)"),
-            v("관심이", "관심/NNG + 이/JKS (attention, subject)"),
-            v("연예계 쪽으로", "연예/NNG + 계/NNG + 쪽/NNB + 으로/JKB (toward the entertainment world)"),
-            v("집중되는", "집중/NNG + 되/XSV + 는/ETM (that is being concentrated)"),
-            v("틈을 노려", "틈/NNG + 을/JKO + 노리/VV + 어/EC (seizing the gap)"),
+            v("언론의", "언론 + 의 (of the press)"),
+            v("관심이", "관심 + 이 (attention, subject)"),
+            v("연예계 쪽으로", "연예계 + 쪽 + 으로 (toward the entertainment world)"),
+            v("집중되는", "집중되다 + 는 (that is being concentrated)"),
+            v("틈을 노려", "틈 + 을 + 노리다 + 어 (seizing the gap)"),
         ],
     ),
     lesson(
@@ -382,12 +382,12 @@ pub const LESSONS: &[Lesson] = &[
             v("있다", "to exist / can"),
         ],
         &[
-            v("자칫", "자칫/MAG (at the slightest slip)"),
-            v("국민들이", "국민/NNG + 들/XSN + 이/JKS (the public, subject)"),
-            v("민감하게", "민감/XR + 하/XSA + 게/EC (sensitively)"),
-            v("받아들일", "받아들이/VV + ㄹ/ETM (that one might accept)"),
-            v("수", "수/NNB (a possibility)"),
-            v("있는", "있/VV + 는/ETM (that there is)"),
+            v("자칫", "자칫 (at the slightest slip)"),
+            v("국민들이", "국민 + 들 + 이 (the public, subject)"),
+            v("민감하게", "민감하다 + 게 (sensitively)"),
+            v("받아들일", "받아들이다 + ㄹ (that one might accept)"),
+            v("수", "수 (a possibility)"),
+            v("있는", "있다 + 는 (that there is)"),
         ],
     ),
     lesson(
@@ -403,12 +403,40 @@ pub const LESSONS: &[Lesson] = &[
             v("시키다", "to make / to cause"),
         ],
         &[
-            v("「", "「/SS (opening quote)"),
-            v("교권보호법", "교권/NNG + 보호법/NNG (the Teacher Authority Protection Act)"),
-            v("개정안", "개정/NNG + 안/NNP (the amendment bill)"),
-            v("」", "」/SS (closing quote)"),
-            v("을", "을/JKO (object)"),
-            v("통과시킨다", "통과/NNG + 시키/XSV + ㄴ다/EC (they cause it to pass)"),
+            v("「", "「 (opening quote)"),
+            v("교권보호법", "교권 + 보호법 (the Teacher Authority Protection Act)"),
+            v("개정안", "개정 + 안 (the amendment bill)"),
+            v("」", "」 (closing quote)"),
+            v("을", "을 (object)"),
+            v("통과시킨다", "통과시키다 + ㄴ다 (they cause it to pass)"),
+        ],
+    ),
+    lesson(
+        18,
+        "그로부터 2년 후⋯",
+        "Two years after that…",
+        &[
+            v("그", "that"),
+            v("로부터", "from / since"),
+            v("2년", "two years"),
+            vh("후", "後", "after"),
+        ],
+        &[
+            v("그로부터", "그 + 로부터 (from that)"),
+            v("2년 후", "2 + 년 + 후 (two years later)"),
+        ],
+    ),
+    lesson(
+        19,
+        "학교 다녀오겠습니다.",
+        "I'm off to school.",
+        &[
+            vh("학교", "學校", "school"),
+            v("다녀오다", "to go and come back"),
+        ],
+        &[
+            v("학교", "학교 (school)"),
+            v("다녀오겠습니다.", "다녀오다 + 겠 + 습니다 + . (I will go and come back)"),
         ],
     ),
 ];
