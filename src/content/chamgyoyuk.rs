@@ -221,8 +221,7 @@ pub const LESSONS: &[Lesson] = &[
             v("대상으로", "대상 + 으로 (as the target)"),
             v("앙케이트 조사", "앙케이트 + 조사 (a questionnaire survey)"),
             v("조사를", "조사 + 를 (the survey, object)"),
-            v("한", "하다 + ㄴ (that was done)"),
-            v("결과", "결과 (result)"),
+            v("한 결과", "하다 + ㄴ + 결과 (the result of having done)"),
         ],
     ),
     lesson(
