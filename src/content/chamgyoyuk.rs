@@ -22,7 +22,7 @@ pub const LESSONS: &[Lesson] = &[
     lesson(
         0,
         "본 작품은 가상으로 만들어진 허구의 이야기입니다",
-        "This work is a fictional story created as fiction.",
+        "This work is a fictional story created as fiction",
         &[
             vh("본", "本", "this / the present"),
             vh("작품", "作品", "work (of art)"),
@@ -42,7 +42,7 @@ pub const LESSONS: &[Lesson] = &[
     lesson(
         1,
         "2011년 체벌금지법의 통과 이후",
-        "After the 2011 ban on corporal punishment passed.",
+        "After the 2011 ban on corporal punishment passed",
         &[
             vh("2011년", "年", "the year 2011"),
             vh("체벌", "體罰", "corporal punishment"),
@@ -58,7 +58,7 @@ pub const LESSONS: &[Lesson] = &[
     ),
     lesson(
         2,
-        "교사들은 원칙적으로 더 이상 학생에게 매를 드는 일이 금지되었다",
+        "교사들은 원칙적으로 더 이상 학생에게 매를 드는 일이 금지되었다.",
         "In principle, teachers were no longer allowed to hit students.",
         &[
             vh("교사", "敎師", "teacher"),
@@ -83,7 +83,7 @@ pub const LESSONS: &[Lesson] = &[
     ),
     lesson(
         3,
-        "체벌금지법 도입 이후 교사들은 학생들을 지도하기 대단히 어려워졌다",
+        "체벌금지법 도입 이후 교사들은 학생들을 지도하기 대단히 어려워졌다.",
         "After the corporal-punishment ban, teachers found it much harder to guide students.",
         &[
             vh("체벌금지법", "體罰禁止法", "corporal-punishment ban"),
@@ -107,7 +107,7 @@ pub const LESSONS: &[Lesson] = &[
     ),
     lesson(
         4,
-        "학생들이 마음놓고 교권을 침해하는 행동을 하여도 이를 제재할 수단이 그다지 많지 않았던 것이다",
+        "학생들이 마음놓고 교권을 침해하는 행동을 하여도 이를 제재할 수단이 그다지 많지 않았던 것이다.",
         "Even if students freely violated teachers' authority, there were not that many ways to sanction it.",
         &[
             vh("학생", "學生", "student"),
@@ -183,7 +183,7 @@ pub const LESSONS: &[Lesson] = &[
     ),
     lesson(
         7,
-        "법을 자신에게 유리하게 이용할 줄 알았다",
+        "법을 자신에게 유리하게 이용할 줄 알았다.",
         "They knew how to use the law to their own advantage.",
         &[
             vh("법", "法", "law"),
@@ -204,7 +204,7 @@ pub const LESSONS: &[Lesson] = &[
     lesson(
         8,
         "전국 교사 1,196명을 대상으로 앙케이트 조사를 한 결과",
-        "The result of a survey of 1,196 teachers nationwide.",
+        "The result of a survey of 1,196 teachers nationwide",
         &[
             vh("전국", "全國", "the whole country"),
             vh("교사", "敎師", "teacher"),
@@ -242,7 +242,6 @@ pub const LESSONS: &[Lesson] = &[
             v("학생 지도가", "학생 지도 + 가 (guiding students, subject)"),
             v("어려워졌다는", "어렵다 + 어지다 + 었 + 다는 (that it became difficult)"),
             v("비율이", "비율 + 이 (the share, subject)"),
-            v("98.6%", "98.6 percent"),
             v("매우", "very"),
             v("85.8%에", "85.8% + 에 (at 85.8%)"),
             v("달하였다", "달하다 + 였 + 다 (reached)"),
