@@ -58,8 +58,8 @@ pub const LESSONS: &[Lesson] = &[
     ),
     lesson(
         2,
-        "교사들은 원칙적으로 더 이상 학생에게 매를 드는 일이 금지되었다",
-        "In principle, teachers were no longer allowed to hit students",
+        "교사들은 원칙적으로 더 이상 학생에게 매를 드는 일이 금지되었다.",
+        "In principle, teachers were no longer allowed to hit students.",
         &[
             vh("교사", "敎師", "teacher"),
             vh("원칙", "原則", "principle"),
@@ -83,8 +83,8 @@ pub const LESSONS: &[Lesson] = &[
     ),
     lesson(
         3,
-        "체벌금지법 도입 이후 교사들은 학생들을 지도하기 대단히 어려워졌다",
-        "After the corporal-punishment ban, teachers found it much harder to guide students",
+        "체벌금지법 도입 이후 교사들은 학생들을 지도하기 대단히 어려워졌다.",
+        "After the corporal-punishment ban, teachers found it much harder to guide students.",
         &[
             vh("체벌금지법", "體罰禁止法", "corporal-punishment ban"),
             vh("도입", "導入", "introduction"),
@@ -107,8 +107,8 @@ pub const LESSONS: &[Lesson] = &[
     ),
     lesson(
         4,
-        "학생들이 마음놓고 교권을 침해하는 행동을 하여도 이를 제재할 수단이 그다지 많지 않았던 것이다",
-        "Even if students freely violated teachers' authority, there were not that many ways to sanction it",
+        "학생들이 마음놓고 교권을 침해하는 행동을 하여도 이를 제재할 수단이 그다지 많지 않았던 것이다.",
+        "Even if students freely violated teachers' authority, there were not that many ways to sanction it.",
         &[
             vh("학생", "學生", "student"),
             v("마음", "heart / mind"),
@@ -183,8 +183,8 @@ pub const LESSONS: &[Lesson] = &[
     ),
     lesson(
         7,
-        "법을 자신에게 유리하게 이용할 줄 알았다",
-        "They knew how to use the law to their own advantage",
+        "법을 자신에게 유리하게 이용할 줄 알았다.",
+        "They knew how to use the law to their own advantage.",
         &[
             vh("법", "法", "law"),
             vh("자신", "自身", "oneself"),
@@ -226,15 +226,14 @@ pub const LESSONS: &[Lesson] = &[
     ),
     lesson(
         9,
-        "과거보다 학생 지도가 어려워졌다는 비율이 98.6%⋯ 매우 어려워졌다는 비율이 85.8%에 달하였다",
-        "The share who said guiding students got harder than in the past was 98.6%… the share who said it got much harder reached 85.8%",
+        "과거보다 학생 지도가 어려워졌다는 비율이 98.6%⋯ 매우 어려워졌다는 비율이 85.8%에 달하였다.",
+        "The share who said guiding students got harder than in the past was 98.6%… the share who said it got much harder reached 85.8%.",
         &[
             vh("과거", "過去", "the past"),
             vh("학생", "學生", "student"),
             vh("지도", "指導", "guidance"),
             v("어렵다", "to be difficult"),
             vh("비율", "比率", "share / ratio"),
-            v("98.6%", "98.6 percent"),
             v("매우", "very"),
             v("달하다", "to reach"),
         ],
