@@ -438,4 +438,24 @@ pub const LESSONS: &[Lesson] = &[
             v("다녀오겠습니다.", "다녀오다 + 겠 + 습니다 + . (I will go and come back)"),
         ],
     ),
+    lesson(
+        20,
+        "이른아침 등교시간 2학년 선배가 자살했다.",
+        "Early in the morning, at the hour of going to school, a second-year senior died by suicide.",
+        &[
+            vh("아침", "朝", "morning"),
+            vh("등교", "登校", "going to school"),
+            vh("시간", "時間", "time / hour"),
+            vh("학년", "學年", "school year / grade"),
+            vh("선배", "先輩", "senior"),
+            vh("자살", "自殺", "suicide"),
+        ],
+        &[
+            v("이른아침", "이르다 + ㄴ + 아침 (early morning)"),
+            v("등교시간", "등교 + 시간 (the hour of going to school)"),
+            v("2학년", "2 + 학년 (second year)"),
+            v("선배가", "선배 + 가 (a senior, subject)"),
+            v("자살했다.", "자살 + 하다 + 였다 + 다 + . (died by suicide)"),
+        ],
+    ),
 ];
