@@ -262,10 +262,8 @@ pub const LESSONS: &[Lesson] = &[
             v("날", "day"),
         ],
         &[
-            v("교권", "교권 (teacher authority)"),
             v("교실 붕괴의", "교실 붕괴 + 의 (of classroom collapse)"),
             v("문제가", "문제 + 가 (the problem, subject)"),
-            v("나날이", "나날이 (day by day)"),
             v("지적되던", "지적 + 되다 + 던 (that kept being pointed out)"),
             v("어느 날", "어느 + 날 (one day)"),
         ],
