@@ -333,7 +333,7 @@ pub const LESSONS: &[Lesson] = &[
             v("마음", "heart / mind"),
             v("맘", "마음 short"),
             vh("편하다", "便", "comfortable"),
-            vh("편히", "便", "at ease"),
+            vh("편히", "便", "comfortably"),
             v("노래", "song"),
             v("부르다", "sing"),
             v("−기", "verb as noun"),
