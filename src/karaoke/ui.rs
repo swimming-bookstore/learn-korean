@@ -100,19 +100,20 @@ pub fn KaraokePlate(
     meaning: &'static str,
     script: Script,
     player: Player,
+    highlight: bool,
 ) -> impl IntoView {
     let plate_s = script.clone();
     view! {
         <div class="plate">
             <p class="ko-line" class:long={korean.chars().count() > 28}>
                 {move || {
+                    if !highlight {
+                        return korean.to_string().into_any();
+                    }
                     let span = cur_line(&plate_s, player)
                         .and_then(|li| plate_s.lines.get(li))
                         .and_then(|l| l.span);
-                    let grammar = cur_line(&plate_s, player)
-                        .and_then(|li| plate_s.lines.get(li))
-                        .is_some_and(|l| l.section == "Grammar");
-                    paint(korean, span, grammar)
+                    paint(korean, span).into_any()
                 }}
             </p>
             <p class="en-line">{meaning}</p>
@@ -120,7 +121,7 @@ pub fn KaraokePlate(
     }
 }
 
-fn paint(korean: &str, span: Option<(usize, usize)>, grammar: bool) -> impl IntoView {
+fn paint(korean: &str, span: Option<(usize, usize)>) -> impl IntoView {
     let Some((a, b)) = span else {
         return Either::Left(korean.to_string());
     };
@@ -129,7 +130,7 @@ fn paint(korean: &str, span: Option<(usize, usize)>, grammar: bool) -> impl Into
     }
     Either::Right(view! {
         <span class="dim">{korean[..a].to_string()}</span>
-        <span class="hit" class:gram=grammar>{korean[a..b].to_string()}</span>
+        <span class="hit">{korean[a..b].to_string()}</span>
         <span class="dim">{korean[b..].to_string()}</span>
     })
 }
@@ -197,6 +198,8 @@ fn scroll_now(list: NodeRef<html::Div>) {
         let Ok(now) = el.dyn_into::<web_sys::HtmlElement>() else {
             return;
         };
+        // Same clip as 참교육: the list lives under the sentence, so a card
+        // never slides up over the Korean line.
         let top = now.offset_top() as f64;
         let h = now.offset_height() as f64;
         let view = root.client_height() as f64;
