@@ -201,7 +201,9 @@ fn scroll_now(list: NodeRef<html::Div>) {
         let h = now.offset_height() as f64;
         let view = root.client_height() as f64;
         let y = (top - (view - h) * 0.22).max(0.0);
-        root.set_scroll_top(y as i32);
+        // A big jump (vocab → grammar) blanks one compositor frame. Slide the
+        // rows instead so the capture never sees an empty clip.
+        let _ = root.set_attribute("style", &format!("transform: translateY(-{y}px)"));
     });
     let _ = window.request_animation_frame(cb.as_ref().unchecked_ref());
 }
