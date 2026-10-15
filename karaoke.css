@@ -35,9 +35,6 @@
   width: 100%;
   max-width: none;
   overflow: hidden;
-  position: relative;
-  z-index: 4;
-  background: var(--paper);
   user-select: none;
   -webkit-user-select: none;
 }
@@ -48,7 +45,6 @@
   height: 100%;
   overflow: hidden;
   position: relative;
-  background: var(--paper);
 }
 
 .stage.record .karaoke .sec {
@@ -76,7 +72,7 @@
 }
 
 .stage.record .karaoke .line.now.gram {
-  background: #b7d7f5;
+  background: #ffe58a;
 }
 
 .stage.record .karaoke .ko {
