@@ -72,6 +72,10 @@
 }
 
 .stage.record .karaoke .line.now.gram {
+  background: #b7d7f5;
+}
+
+.stage.record.toesa .karaoke .line.now.gram {
   background: #ffe58a;
 }
 

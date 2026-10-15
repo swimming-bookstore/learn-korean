@@ -116,6 +116,7 @@ fn LessonPage(lesson: Lesson, route: RwSignal<Route>, record: RwSignal<bool>) ->
             class="stage"
             class:record=move || record.get()
             class:capture=capture
+            class:toesa=lesson.series_n == 1
             data-ready="1"
             data-done=move || if player.done.get() { "1" } else { "0" }
         >
