@@ -335,9 +335,11 @@ pub const LESSONS: &[Lesson] = &[
             vh("편히", "便", "comfortably"),
             v("노래", "song"),
             v("부르다", "sing"),
-            v("−기", "verb as noun"),
         ],
-        &[v("노래 부르기", "singing")],
+        &[
+            v("편히", "comfortably"),
+            v("노래 부르기", "singing"),
+        ],
     ),
     lesson(
         24,

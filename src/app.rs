@@ -139,6 +139,7 @@ fn LessonPage(lesson: Lesson, route: RwSignal<Route>, record: RwSignal<bool>) ->
                             meaning=meaning
                             script=script_lyr.clone()
                             player=player
+                            highlight=lesson.series_n != 1
                         />
                         <KaraokeLyrics script=script_lyr.clone() player=player />
                     }.into_any()

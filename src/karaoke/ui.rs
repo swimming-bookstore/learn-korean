@@ -94,25 +94,30 @@ pub fn KaraokeRead(script: Script) -> impl IntoView {
 }
 
 /// Sentence above the list. Gold walks the matching stretch with the current card.
+/// Toesa is not True Education: the sentence stays plain.
 #[component]
 pub fn KaraokePlate(
     korean: &'static str,
     meaning: &'static str,
     script: Script,
     player: Player,
+    highlight: bool,
 ) -> impl IntoView {
     let plate_s = script.clone();
     view! {
         <div class="plate">
             <p class="ko-line" class:long={korean.chars().count() > 28}>
                 {move || {
+                    if !highlight {
+                        return korean.to_string().into_any();
+                    }
                     let span = cur_line(&plate_s, player)
                         .and_then(|li| plate_s.lines.get(li))
                         .and_then(|l| l.span);
                     let grammar = cur_line(&plate_s, player)
                         .and_then(|li| plate_s.lines.get(li))
                         .is_some_and(|l| l.section == "Grammar");
-                    paint(korean, span, grammar)
+                    paint(korean, span, grammar).into_any()
                 }}
             </p>
             <p class="en-line">{meaning}</p>
@@ -197,12 +202,22 @@ fn scroll_now(list: NodeRef<html::Div>) {
         let Ok(now) = el.dyn_into::<web_sys::HtmlElement>() else {
             return;
         };
-        let top = now.offset_top() as f64;
-        let h = now.offset_height() as f64;
-        let view = root.client_height() as f64;
-        let y = (top - (view - h) * 0.22).max(0.0);
-        // A big jump (vocab → grammar) blanks one compositor frame. Slide the
-        // rows instead so the capture never sees an empty clip.
+        let root_el = root.clone().unchecked_into::<web_sys::Element>();
+        let now_el = now.unchecked_into::<web_sys::Element>();
+        let root_bottom = root_el.get_bounding_client_rect().bottom();
+        let card_bottom = now_el.get_bounding_client_rect().bottom();
+        let page = web_sys::window()
+            .and_then(|w| w.inner_height().ok())
+            .and_then(|v| v.as_f64())
+            .unwrap_or(960.0);
+        // Chrome --app reports a taller innerHeight than the 640×960 capture,
+        // so the last grammar card sat under the real frame. Cap to both.
+        let limit = page.min(960.0);
+        let y = if card_bottom <= limit - 8.0 {
+            0.0
+        } else {
+            card_bottom - limit + 24.0
+        };
         let _ = root.set_attribute("style", &format!("transform: translateY(-{y}px)"));
     });
     let _ = window.request_animation_frame(cb.as_ref().unchecked_ref());
