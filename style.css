@@ -207,6 +207,10 @@ footer {
   -webkit-box-decoration-break: clone;
 }
 
+.stage.record .plate .ko-line .hit.gram {
+  background: #b7d7f5;
+}
+
 .stage.record .plate .en-line {
   margin: 0.45rem 0 0;
   max-width: none;

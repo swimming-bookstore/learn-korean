@@ -110,10 +110,10 @@ pub fn KaraokePlate(
                     if !highlight {
                         return korean.to_string().into_any();
                     }
-                    let span = cur_line(&plate_s, player)
-                        .and_then(|li| plate_s.lines.get(li))
-                        .and_then(|l| l.span);
-                    paint(korean, span).into_any()
+                    let cur = cur_line(&plate_s, player).and_then(|li| plate_s.lines.get(li));
+                    let span = cur.and_then(|l| l.span);
+                    let grammar = cur.is_some_and(|l| l.section == "Grammar");
+                    paint(korean, span, grammar).into_any()
                 }}
             </p>
             <p class="en-line">{meaning}</p>
@@ -121,7 +121,7 @@ pub fn KaraokePlate(
     }
 }
 
-fn paint(korean: &str, span: Option<(usize, usize)>) -> impl IntoView {
+fn paint(korean: &str, span: Option<(usize, usize)>, grammar: bool) -> impl IntoView {
     let Some((a, b)) = span else {
         return Either::Left(korean.to_string());
     };
@@ -130,7 +130,7 @@ fn paint(korean: &str, span: Option<(usize, usize)>) -> impl IntoView {
     }
     Either::Right(view! {
         <span class="dim">{korean[..a].to_string()}</span>
-        <span class="hit">{korean[a..b].to_string()}</span>
+        <span class="hit" class:gram=grammar>{korean[a..b].to_string()}</span>
         <span class="dim">{korean[b..].to_string()}</span>
     })
 }
