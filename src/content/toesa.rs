@@ -350,9 +350,11 @@ pub const LESSONS: &[Lesson] = &[
             v("이런", "this kind of"),
             v("철없다", "immature"),
             v("말", "words"),
-            v("이", "subject"),
         ],
-        &[v("철없는", "childish (modifies 말)")],
+        &[
+            v("철없는", "childish (modifies 말)"),
+            v("말이", "말 + 이 (words, subject)"),
+        ],
     ),
     lesson(
         25,
