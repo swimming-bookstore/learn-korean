@@ -596,4 +596,30 @@ pub const LESSONS: &[Lesson] = &[
             v("나는", "나/NP + 는/JX (I, topic)"),
         ],
     ),
+    lesson(
+        27,
+        "웃고있었다.",
+        "I was smiling.",
+        &[
+            v("웃다", "to smile / to laugh"),
+            v("있다", "to be (in a state)"),
+        ],
+        &[
+            v("웃고있었다.", "웃/VV + 고/EC + 있/VX + 었/EP + 다/EF + ./SF (was smiling)"),
+        ],
+    ),
+    lesson(
+        28,
+        "내가\n사이코패스냐고?",
+        "Are you asking if I'm a psychopath?",
+        &[
+            v("나", "I"),
+            v("사이코패스", "psychopath"),
+            v("냐고", "whether / asking if"),
+        ],
+        &[
+            v("내가", "내/NP + 가/JKS (I, subject)"),
+            v("사이코패스냐고?", "사/NNG + 이코패/NNP + 스/VV + 이/VCP + 냐고/EF + ?/SF (are you asking if I'm a psychopath?)"),
+        ],
+    ),
 ];
