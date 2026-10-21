@@ -97,18 +97,29 @@ fn card_line(
     sentence: &str,
     from: usize,
 ) -> (Line, usize) {
-    let span = span_in(sentence, item.word, from, section);
+    // 「 and 」 are punctuation, not a word. Do not paint them on the sentence.
+    let span = if is_quote_mark(item.word) {
+        None
+    } else {
+        span_in(sentence, item.word, from)
+    };
     // Step past a finished syllable so the next card is not this one.
     // A stem match (`매` inside `매를`) ends mid-syllable; jump to the next
     // character so `들다` is not hidden inside `를`.
     let next = span
         .map(|(_, b)| {
+            // `b` is exclusive and already a char boundary when the match is whole
+            // (`낭만`). A stem match (`매` inside `매를`) ends mid-syllable; only
+            // then jump to the next character so `들다` is not hidden inside `를`.
+            // Always stepping one character skips `이라` after `낭만`.
             let mut i = b.min(sentence.len());
-            if i < sentence.len() {
-                i += 1;
-            }
-            while i < sentence.len() && !sentence.is_char_boundary(i) {
-                i += 1;
+            if i < sentence.len() && !sentence.is_char_boundary(i) {
+                while i < sentence.len() && !sentence.is_char_boundary(i) {
+                    i += 1;
+                }
+                if i < sentence.len() {
+                    i += sentence[i..].chars().next().map(|c| c.len_utf8()).unwrap_or(0);
+                }
             }
             i
         })
@@ -138,11 +149,12 @@ fn card_line(
 /// `통과 이후` covers both words; `작품은` beats a bare `작품`. Hanja glosses are skipped.
 /// A dictionary verb (`만들다`) highlights its stem when the sentence uses a form (`만들어진`).
 /// Search starts at `from` so a later `들` is not the plural in `교사들`.
-fn span_in(sentence: &str, label: &str, from: usize, section: &str) -> Option<(usize, usize)> {
+fn span_in(sentence: &str, label: &str, from: usize) -> Option<(usize, usize)> {
     let sentence = sentence.trim();
     let from = char_boundary_at_or_after(sentence, from.min(sentence.len()));
     let mut start: Option<usize> = None;
     let mut end = 0usize;
+    let label = strip_mark(label);
     let chars: Vec<(usize, char)> = label.char_indices().collect();
     let mut i = 0;
     while i < chars.len() {
@@ -158,20 +170,9 @@ fn span_in(sentence: &str, label: &str, from: usize, section: &str) -> Option<(u
             end_i += 1;
         }
         let needle = &label[byte..end_byte];
-        let hit = if section == "Grammar" {
-            find_from(sentence, needle, from)
+        let hit = find_from(sentence, needle, from)
                 .or_else(|| {
                     // `계` is one syllable and may sit inside the previous card (`연예`).
-                    if needle.chars().count() == 1 {
-                        find_from(sentence, needle, 0)
-                    } else {
-                        None
-                    }
-                })
-                .map(|at| (at, at + needle.len()))
-        } else {
-            find_from(sentence, needle, from)
-                .or_else(|| {
                     if needle.chars().count() == 1 {
                         find_from(sentence, needle, 0)
                     } else {
@@ -229,7 +230,22 @@ fn span_in(sentence: &str, label: &str, from: usize, section: &str) -> Option<(u
                     let at = find_from(sentence, &written, from)?;
                     Some((at, at + written.len()))
                 })
-        };
+                .or_else(|| {
+                    // `하다` → `할`: ㄹ/ETM sits on 하, so the bare stem is not written.
+                    // Search the whole sentence: `낭만이라 하다` already walked past `할`.
+                    // `?` would leave this card early, so this fallback returns None.
+                    let stem = match verb_stem(needle) {
+                        Some(stem) if stem.chars().count() == 1 => stem,
+                        _ => return None,
+                    };
+                    let written = match with_rieul_batchim(stem) {
+                        Some(written) => written,
+                        None => return None,
+                    };
+                    let at = find_from(sentence, &written, 0)?;
+                    Some((at, at + written.len()))
+                })
+                .or_else(|| ending_span(sentence, needle, from));
         if let Some((at, to)) = hit {
             cover(
                 at,
@@ -286,6 +302,17 @@ fn is_ko_or_latin(c: char) -> bool {
     c.is_ascii_alphanumeric() || ('가'..='힣').contains(&c)
 }
 
+/// 「 and 」 name the quote marks. They stay on the card, not in the highlight.
+fn is_quote_mark(label: &str) -> bool {
+    let bare = label.trim();
+    !bare.is_empty() && bare.chars().all(|c| matches!(c, '「' | '」' | '『' | '』' | '"' | '“' | '”'))
+}
+
+/// `−이라` is written `이라`. The leading dash is only a grammar mark.
+fn strip_mark(label: &str) -> &str {
+    label.trim_start_matches(['−', '-', '–', ' '])
+}
+
 /// `만들다` → `만들`, `하다` → `하`. Leaves stems that would be a single jamo alone.
 fn verb_stem(word: &str) -> Option<&str> {
     let stem = word.strip_suffix('다')?;
@@ -332,14 +359,55 @@ fn eu_plus_eo(stem: &str) -> Option<String> {
 
 /// `느끼` + ㄴ → `느낀`. The attributive ㄴ is a batchim, so the bare stem is not written.
 fn with_nieun_batchim(stem: &str) -> Option<String> {
+    add_batchim(stem, 4)
+}
+
+/// `하` + ㄹ → `할`. Prospective ㄹ is a batchim, so the bare stem is not written.
+fn with_rieul_batchim(stem: &str) -> Option<String> {
+    add_batchim(stem, 8)
+}
+
+fn add_batchim(stem: &str, jong: u32) -> Option<String> {
     let mut chars: Vec<char> = stem.chars().collect();
     let last = chars.last_mut()?;
     let code = *last as u32;
+    // Only a syllable with no batchim can take ㄴ or ㄹ. `라` + 8 is `할`,
+    // which would steal `하다` from the real `할`.
     if !(0xAC00..=0xD7A3).contains(&code) || (code - 0xAC00) % 28 != 0 {
         return None;
     }
-    *last = char::from_u32(code + 4)?;
+    *last = char::from_u32(code + jong)?;
     Some(chars.into_iter().collect())
+}
+
+/// A grammar ending that is not written as its dictionary label.
+/// `−ㄹ 테다` is `테` inside `할 테죠`; `−죠` is the same syllable as `요` said cutely.
+fn ending_span(sentence: &str, needle: &str, from: usize) -> Option<(usize, usize)> {
+    let bare = needle.trim_start_matches(['−', '-', '–']);
+    // `−이라` is written `이라`. The leading dash is only a grammar mark.
+    if !bare.is_empty()
+        && bare.chars().all(|c| ('가'..='힣').contains(&c))
+        && bare.chars().count() > 1
+    {
+        let at = find_from(sentence, bare, from)?;
+        return Some((at, at + bare.len()));
+    }
+    let head = bare.split_whitespace().next().unwrap_or(bare);
+    // `−ㄹ 테다` / `−ㄹ 테요`: the ㄹ already fused onto the verb (`할`).
+    if head.starts_with('ㄹ') {
+        let rest = bare[head.len()..].trim_start();
+        let stem = verb_stem(rest).unwrap_or(rest);
+        if stem.chars().count() >= 1 && stem.chars().all(|c| ('가'..='힣').contains(&c)) {
+            let at = find_from(sentence, stem, from)?;
+            return Some((at, at + stem.len()));
+        }
+    }
+    // `−죠` is 요 written the way it is said.
+    if bare == "죠" {
+        let at = find_from(sentence, "죠", from).or_else(|| find_from(sentence, "죠", 0))?;
+        return Some((at, at + "죠".len()));
+    }
+    None
 }
 
 /// `인하` + 여 → `인해`. 하 contracts with 여, so the dictionary stem is not written.
@@ -382,6 +450,33 @@ fn token_at(lines: &[Line], mut n: usize) -> Option<(usize, usize, &Token)> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn true_education_17_grammar_has_no_quote_marks() {
+        let lesson = crate::content::get(2, 17).unwrap();
+        assert!(lesson
+            .grammar
+            .iter()
+            .all(|item| !item.word.chars().any(|c| matches!(c, '「' | '」'))));
+        let script = compile(lesson, Timing::default());
+        assert!(script.lines.iter().all(|l| {
+            l.section != "Grammar" || l.word().is_none_or(|w| !w.chars().any(|c| matches!(c, '「' | '」')))
+        }));
+        let bill = script
+            .lines
+            .iter()
+            .find(|l| l.word() == Some("교권보호법"))
+            .unwrap();
+        let (a, b) = bill.span.unwrap();
+        assert_eq!(&lesson.korean[a..b], "교권보호법");
+        let pass = script
+            .lines
+            .iter()
+            .find(|l| l.word() == Some("통과시킨다"))
+            .unwrap();
+        let (a, b) = pass.span.unwrap();
+        assert_eq!(&lesson.korean[a..b], "통과시킨다");
+    }
 
     #[test]
     fn day_one_vocab_then_grammar() {
@@ -669,6 +764,30 @@ mod tests {
                 let shown = line.span.map(|(a, b)| &lesson.korean[a..b]).unwrap_or("NONE");
                 assert_eq!(shown, *span, "{word}");
             }
+        }
+    }
+
+    #[test]
+    fn toesa_day_twenty_eight_cards_hit_the_sentence() {
+        let lesson = crate::content::get(1, 28).unwrap();
+        let script = compile(lesson, Timing::default());
+        let expect = [
+            ("낭만", "낭만"),
+            ("−이라", "이라"),
+            ("하다", "할"),
+            ("−ㄹ 테다", "테"),
+            ("−죠", "죠"),
+            ("낭만이라 하다", "낭만이라 할"),
+            ("할 테죠", "할 테죠"),
+        ];
+        for (word, span) in expect {
+            let line = script
+                .lines
+                .iter()
+                .find(|l| l.word().is_some_and(|w| w == word || w.starts_with(word)))
+                .unwrap_or_else(|| panic!("missing {word}"));
+            let shown = line.span.map(|(a, b)| &lesson.korean[a..b]).unwrap_or("NONE");
+            assert_eq!(shown, span, "{word}");
         }
     }
 }
