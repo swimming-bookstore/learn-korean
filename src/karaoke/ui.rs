@@ -101,6 +101,8 @@ pub fn KaraokePlate(
     script: Script,
     player: Player,
     highlight: bool,
+    /// 퇴사 grammar stays gold, same as its cards. 참교육 grammar is blue.
+    gold_grammar: bool,
 ) -> impl IntoView {
     let plate_s = script.clone();
     view! {
@@ -112,7 +114,7 @@ pub fn KaraokePlate(
                     }
                     let cur = cur_line(&plate_s, player).and_then(|li| plate_s.lines.get(li));
                     let span = cur.and_then(|l| l.span);
-                    let grammar = cur.is_some_and(|l| l.section == "Grammar");
+                    let grammar = cur.is_some_and(|l| l.section == "Grammar") && !gold_grammar;
                     paint(korean, span, grammar).into_any()
                 }}
             </p>

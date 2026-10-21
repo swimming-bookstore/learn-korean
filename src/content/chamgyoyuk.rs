@@ -399,10 +399,8 @@ pub const LESSONS: &[Lesson] = &[
             v("시키다", "to make / to cause"),
         ],
         &[
-            v("「", "「 (opening quote)"),
             v("교권보호법", "교권 + 보호법 (the Teacher Authority Protection Act)"),
             v("개정안", "개정 + 안 (the amendment bill)"),
-            v("」", "」 (closing quote)"),
             v("을", "을 (object)"),
             v("통과시킨다", "통과시키다 + ㄴ다 (they cause it to pass)"),
         ],
