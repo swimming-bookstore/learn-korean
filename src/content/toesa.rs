@@ -428,7 +428,7 @@ pub const LESSONS: &[Lesson] = &[
         ],
         &[
             v("나는", "나 + 는 (I, topic)"),
-            v("−적인", "낭만 + 적 + 인, “like romance”"),
+            v("−적인", "낭만 + 적인, “like romance”"),
             v("되어서", "되다 + −어서 (become and then)"),
         ],
     ),
