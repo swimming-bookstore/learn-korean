@@ -422,15 +422,14 @@ pub const LESSONS: &[Lesson] = &[
         "I’ll be a romantic grandma, and then…",
         &[
             v("나", "I"),
-            v("는", "topic"),
-            vh("낭만적인", "浪漫的", "romantic"),
+            vh("낭만", "浪漫", "romance"),
             v("할머니", "grandma"),
             v("되다", "become"),
-            v("−어서", "and then"),
         ],
         &[
-            v("−적인", "−ic"),
-            v("되어서", "become and then"),
+            v("나는", "나 + 는 (I, topic)"),
+            v("−적인", "낭만 + 적 + 인, “like romance”"),
+            v("되어서", "되다 + −어서 (become and then)"),
         ],
     ),
     lesson(

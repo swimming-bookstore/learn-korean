@@ -389,6 +389,19 @@ fn ending_span(sentence: &str, needle: &str, from: usize) -> Option<(usize, usiz
         && bare.chars().all(|c| ('가'..='힣').contains(&c))
         && bare.chars().count() > 1
     {
+        // `−적인` is the suffix on `낭만적인`. A left-to-right `적인` starts on 적
+        // and leaves 인, so take the rightmost hangul run that ends in this ending.
+        if let Some(at) = sentence.rfind(bare) {
+            let to = at + bare.len();
+            if to == sentence.len()
+                || sentence[to..]
+                    .chars()
+                    .next()
+                    .is_some_and(|c| !('가'..='힣').contains(&c))
+            {
+                return Some((at, to));
+            }
+        }
         let at = find_from(sentence, bare, from)?;
         return Some((at, at + bare.len()));
     }
@@ -450,6 +463,27 @@ fn token_at(lines: &[Line], mut n: usize) -> Option<(usize, usize, &Token)> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn toesa_29_particles_are_grammar() {
+        let lesson = crate::content::get(1, 29).unwrap();
+        assert!(lesson.vocab.iter().all(|item| item.word != "는" && item.word != "−어서"));
+        let script = compile(lesson, Timing::default());
+        let expect = [
+            ("나", "나"),
+            ("낭만 浪漫", "낭만"),
+            ("할머니", "할머니"),
+            ("되다", "되"),
+            ("나는", "나는"),
+            ("−적인", "적인"),
+            ("되어서", "되어서"),
+        ];
+        for (word, span) in expect {
+            let line = script.lines.iter().find(|l| l.word() == Some(word)).unwrap();
+            let (a, b) = line.span.expect(word);
+            assert_eq!(&lesson.korean[a..b], span, "{word}");
+        }
+    }
 
     #[test]
     fn true_education_17_grammar_has_no_quote_marks() {
