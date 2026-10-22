@@ -620,4 +620,17 @@ pub const LESSONS: &[Lesson] = &[
             v("사이코패스냐고?", "사/NNG + 이코패/NNP + 스/VV + 이/VCP + 냐고/EF + ?/SF (are you asking if I'm a psychopath?)"),
         ],
     ),
+    lesson(
+        29,
+        "크아아아",
+        "Kraaa (a roar / scream)",
+        &[
+            v("크", "keu (start of a roar)"),
+            v("아", "a (connecting cry)"),
+            v("아아", "aa (drawn-out roar)"),
+        ],
+        &[
+            v("크아아아", "크/NNP + 아/EC + 아아/NNP (kraaa)"),
+        ],
+    ),
 ];
