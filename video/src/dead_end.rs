@@ -13,6 +13,13 @@
 //! both resume together on the next frame. A guessed second, or a 40 ms trim,
 //! lets the picture jump while the voice is still talking.
 //!
+//! The first line's last two words, 것 같지, are quiet. A pause on the loud
+//! syllable 망한 drops them. The cut is after 같지, before the next sound.
+//!
+//! A short pause is under one output tick if the held frames keep the source
+//! clock. fps then emits nothing, the card stays on the line, and the notes
+//! are gone. Each held frame is one tick, so a short pause still shows them.
+//!
 //! On the pause the voice reads the whole line, and the card lights that line.
 //! Then it walks vocabulary one by one — Korean, then English — then each
 //! grammar point, then its meaning, then the meaning of the line. Same order
@@ -93,7 +100,8 @@ const fn g(ko: &'static str, en: &'static str) -> Word {
 static LESSONS: &[Lesson] = &[
     Lesson {
         hear_at: 0.29,
-        pause_at: 1.54,
+        // 것 같지 is still being said at 1.95. A pause at 1.54 kept only 망한.
+        pause_at: 2.16,
         ko: &["나 이번 생은", "망한 것 같지"],
         en: &["I think this life", "is ruined."],
         words: &[
@@ -1506,9 +1514,12 @@ fn add_hold(
     let extra = frames - 1;
     // One real source frame, looped. Not a 40 ms trim: that window is empty
     // when the cut lands on a frame, and the picture then jumps the whole pause.
+    // setpts=N keeps the source clock, 1/24000. A short pause is then under
+    // one output tick, fps emits nothing, and the notes never appear.
+    // N*1001/24000/TB is one tick per frame, so a short pause still holds.
     chains.push(format!(
         "[0:v]trim=start_frame={frame}:end_frame={next},setpts=PTS-STARTPTS,\
-         loop=loop={extra}:size=1:start=0,trim=end_frame={frames},setpts=N,fps={FPS},settb=1001/24000,format=yuv420p[{tag}v]",
+         loop=loop={extra}:size=1:start=0,trim=end_frame={frames},setpts=N*1001/24000/TB,fps={FPS},settb=1001/24000,format=yuv420p[{tag}v]",
         next = frame + 1
     ));
     let (hstack, staged) = stage(&tag, &format!("{tag}v"), frames);
@@ -1756,6 +1767,11 @@ mod tests {
             reply.hear_at
         );
         assert!(reply.hear_at + 0.05 > nightmare.pause_at);
+        // 것 같지 is still in the line at 1.95. A pause at 1.54 kept only 망한.
+        let first = &LESSONS[0];
+        assert!(first.pause_at >= 2.08, "01 still cuts 것 같지 at {}", first.pause_at);
+        assert!(first.pause_at < 2.60, "01 pause landed in the next sound");
+        assert!(first.pause_at + 0.05 < LESSONS[1].hear_at);
         assert_eq!(
             LESSONS.iter().find(|l| l.hear_at >= 12.0 && l.hear_at < 16.0).unwrap().say,
             "최저 시급의 기본 10배부터 시작하고요."
@@ -1905,6 +1921,14 @@ mod tests {
             .unwrap();
         assert!(hold.contains("trim=start_frame="), "the freeze must be one source frame");
         assert!(hold.contains("loop=loop="), "that frame is held, not skipped");
+        assert!(
+            hold.contains("setpts=N*1001/24000/TB"),
+            "a short pause drops every frame if PTS stays on the source clock"
+        );
+        assert!(
+            !hold.contains("setpts=N,fps"),
+            "bare setpts=N drops a short pause, and the notes never appear"
+        );
         assert!(!hold.contains("tpad"), "a 40 ms trim is the jump");
         assert!(!hold.contains("[0:a]"), "trailer audio stays paused");
         assert!(!hold.contains("adelay"), "the notes start on the pause, not late");

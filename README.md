@@ -46,6 +46,8 @@ same shape as the Dead-End Job reaction. Source is the official MV. The cut is
 the quiet after the line, the same rule as the trailer. Sung picture and sung
 audio stop on that frame. The explanation plays only while that frame is held,
 then both resume together. A pause inside the next line is the jump.
+After the last note the picture and the song play out to the end of the MV.
+The card stays blank for that stretch. Stopping at the note cuts the outro.
 
 ```bash
 cargo run --release --manifest-path video/Cargo.toml
@@ -64,6 +66,10 @@ vocabulary, in dictionary form (a verb ends in 다), then that stem plus its
 particle or ending in grammar. 의 is "of", not a slash and not "'s".
 The cut is the quiet after the line. Trailer picture and trailer audio stop
 there, and the explanation plays only while that frame is held.
+Line 01 ends on 것 같지, which is quieter than 망한. The pause is after 같지,
+not on 망한, or those two words are cut off.
+A short pause still has to emit every frame. If those frames keep the source
+clock, they are under one tick, the hold is dropped, and the notes are gone.
 Speech is recognized in windows shorter than 20 seconds; one long pass
 garbles everything after that.
 

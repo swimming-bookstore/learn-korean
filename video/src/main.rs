@@ -9,6 +9,8 @@
 //! that frame. The explanation plays only while that frame is held. Then both
 //! resume together on the next frame. A pause inside the next line is the
 //! jump: the notes talk, and the song is already on the next syllable.
+//! The last note is not the end of the MV. After it, the picture and the
+//! song play out to the last source frame, and the card stays blank.
 //!
 //! The voice then says the whole line again in Korean, and the card lights
 //! that line. Then it walks vocabulary one by one — Korean, then English —
@@ -1176,6 +1178,10 @@ fn panel_draws(
 ) -> Result<Vec<String>, String> {
     let mut draws = Vec::new();
     let x = PX;
+    // After the last note the MV is still playing. The card stays blank.
+    if mode == "quiet" {
+        return Ok(draws);
+    }
     let (tag, tag_c) = if repeat {
         ("REPEAT", "0x8A5A00")
     } else {
@@ -1418,6 +1424,32 @@ fn build(
             )?;
         }
         cursor = cue.end;
+    }
+
+    // The last note is not the end of the MV. Play the rest of the picture
+    // and the song, with the card blank, the same as the trailer tail.
+    // A draft stops a second later so the cut can be checked without the outro.
+    let tail = if cues.len() < 34 {
+        (cursor + frames_ceil(1.0)).min(SRC_FRAMES)
+    } else {
+        SRC_FRAMES
+    };
+    if tail - cursor > 2 {
+        let index = cues.last().map(|c| c.lesson).unwrap_or(0);
+        total += add_play(
+            &mut chains,
+            &mut vlabels,
+            &mut alabels,
+            &mut seg_i,
+            cursor,
+            tail,
+            "quiet",
+            &LESSONS[index],
+            index,
+            n,
+            &header,
+            false,
+        )?;
     }
 
     let nseg = vlabels.len();
@@ -1733,6 +1765,30 @@ mod tests {
         // 뒤돌아보곤 is still being sung at 193.2. The pause is after that line.
         let last = by_lesson(28);
         assert!(secs(last.end) >= 194.30, "last line still cut at {}", secs(last.end));
+        // The note is not the end of the MV. The song still has the outro.
+        assert!(last.end < SRC_FRAMES - 24, "no tail left after the last note");
+    }
+
+    #[test]
+    fn quiet_tail_leaves_the_card_blank() {
+        let src = include_str!("main.rs");
+        let build = src
+            .split("fn build(")
+            .nth(1)
+            .unwrap()
+            .split("fn add_play")
+            .next()
+            .unwrap();
+        assert!(build.contains("SRC_FRAMES"), "the full song must play out");
+        assert!(build.contains("\"quiet\""), "the outro is a quiet card");
+        let panel = src
+            .split("fn panel_draws")
+            .nth(1)
+            .unwrap()
+            .split("fn stage")
+            .next()
+            .unwrap();
+        assert!(panel.contains("mode == \"quiet\""));
     }
 
     #[test]
