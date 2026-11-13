@@ -1,0 +1,14 @@
+[package]
+name = "toesa-video"
+version = "0.1.0"
+edition = "2021"
+description = "퇴사할게여 music video as a Korean lesson, picture left, remarks right."
+default-run = "toesa-video"
+
+[[bin]]
+name = "toesa-video"
+path = "src/main.rs"
+
+[[bin]]
+name = "dead-end-job"
+path = "src/dead_end.rs"
