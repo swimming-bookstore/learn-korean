@@ -114,7 +114,7 @@ pub const LESSONS: &[Lesson] = &[
     lesson(
         8,
         "쿨하게 짐을 싸고 뒤돌아보지 않고",
-        "Pack cool, don’t look back.",
+        "Pack the bags cool, and don’t look back.",
         &[
             v("쿨하다", "be cool"),
             v("−게", "adverb"),

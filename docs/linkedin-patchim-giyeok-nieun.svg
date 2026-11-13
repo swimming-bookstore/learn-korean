@@ -2,16 +2,11 @@
   <rect width="1080" height="1080" fill="#fff9ef"/>
 
   <text x="540" y="90" text-anchor="middle" font-family="Lato, Outfit, ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="700" letter-spacing="7.2" fill="#6a5c4e">KOREAN ESSENTIAL</text>
-  <text y="176" fill="#1d3550" font-weight="700">
-    <tspan x="205.5" font-family="Liberation Serif, serif" font-size="48" font-weight="700">Patchim: can you tell </tspan>
-    <tspan font-family="Noto Serif CJK KR, serif" font-size="52" font-weight="700">ㄱ</tspan>
-    <tspan font-family="Liberation Serif, serif" font-size="48" font-weight="700"> from </tspan>
-    <tspan font-family="Noto Serif CJK KR, serif" font-size="52" font-weight="700">ㄴ</tspan>
-  </text>
-  <text y="236" fill="#6a5c4e">
-    <tspan x="422.5" font-family="Liberation Serif, serif" font-size="28" font-weight="400">Example: </tspan>
-    <tspan font-family="Noto Serif CJK KR, serif" font-size="30" font-weight="400">안</tspan>
-    <tspan font-family="Liberation Serif, serif" font-size="28" font-weight="400"> (inside)</tspan>
+  <text fill="#1d3550" font-weight="700">
+    <tspan x="195.0" y="176.0" font-family="Liberation Serif, serif" font-size="48.0" font-weight="700">Patchim: can you tell </tspan>
+    <tspan y="183.0" font-family="Noto Serif CJK KR, serif" font-size="61.4" font-weight="700">ㄱ</tspan>
+    <tspan y="176.0" font-family="Liberation Serif, serif" font-size="48.0" font-weight="700"> from </tspan>
+    <tspan y="184.0" font-family="Noto Serif CJK KR, serif" font-size="64.0" font-weight="700">ㄴ</tspan>
   </text>
 
   <rect x="56" y="278" width="968" height="652" fill="#fff9ef" stroke="#1d3550" stroke-width="2"/>
@@ -20,8 +15,18 @@
 
   <text x="298.0" y="500" text-anchor="middle" dominant-baseline="central" font-family="Noto Serif CJK KR, serif" font-size="188" fill="#1d3550">악</text>
   <text x="782.0" y="500" text-anchor="middle" dominant-baseline="central" font-family="Noto Serif CJK KR, serif" font-size="188" fill="#1d3550">안</text>
-  <text x="298.0" y="700" text-anchor="middle" dominant-baseline="central" font-family="Noto Serif CJK KR, serif" font-size="84" fill="#1d3550">ㄱ</text>
-  <text x="782.0" y="700" text-anchor="middle" dominant-baseline="central" font-family="Noto Serif CJK KR, serif" font-size="84" fill="#1d3550">ㄴ</text>
+  <text fill="#1d3550" font-weight="700">
+    <tspan x="207.0" y="712.0" font-family="Noto Serif CJK KR, serif" font-size="48.0" font-weight="700">ㄱ</tspan>
+    <tspan y="712.0" font-family="Liberation Serif, serif" font-size="48.0" font-weight="700"> (</tspan>
+    <tspan y="712.0" font-family="Noto Serif CJK KR, serif" font-size="48.0" font-weight="700">기역</tspan>
+    <tspan y="712.0" font-family="Liberation Serif, serif" font-size="48.0" font-weight="700">)</tspan>
+  </text>
+  <text fill="#1d3550" font-weight="700">
+    <tspan x="691.0" y="712.0" font-family="Noto Serif CJK KR, serif" font-size="48.0" font-weight="700">ㄴ</tspan>
+    <tspan y="712.0" font-family="Liberation Serif, serif" font-size="48.0" font-weight="700"> (</tspan>
+    <tspan y="712.0" font-family="Noto Serif CJK KR, serif" font-size="48.0" font-weight="700">니은</tspan>
+    <tspan y="712.0" font-family="Liberation Serif, serif" font-size="48.0" font-weight="700">)</tspan>
+  </text>
 
   <rect x="296.0" y="796.0" width="38.0" height="41.0" fill="#1d3550"/>
   <rect x="780.0" y="796.0" width="37.0" height="41.0" fill="#1d3550"/>

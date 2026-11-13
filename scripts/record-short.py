@@ -29,7 +29,8 @@ PAPER = "0xF6F1E8"
 FPS = 30
 SERIES = {
     "toesa": (1, list(range(1, 32))),
-    "chamgyoyuk": (2, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]),
+    "chamgyoyuk": (2, list(range(0, 19))),
+    "dead-end-job": (3, list(range(0, 29))),
 }
 
 
@@ -141,6 +142,12 @@ def record_day(series_n: int, episode: int, series: str, port: int, cdp: int, ho
         rec.eval(f"document.title = {title!r}")
         time.sleep(0.4)
         fit_window(title, CAPTURE_W, CAPTURE_H)
+        # Chrome still translates the Korean title into the window caption.
+        rec.eval(
+            "document.documentElement.setAttribute('translate','no');"
+            "document.documentElement.classList.add('notranslate');"
+            "document.title = document.title;"
+        )
         rec.start_capture()
         if hold > 0:
             rec.hold(hold)

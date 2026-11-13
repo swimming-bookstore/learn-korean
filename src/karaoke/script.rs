@@ -824,4 +824,150 @@ mod tests {
             assert_eq!(shown, span, "{word}");
         }
     }
+
+    #[test]
+    fn dead_end_job_company_name_is_spider_plus_manpower() {
+        let lesson = crate::content::get(3, 2).unwrap();
+        assert_eq!(lesson.korean, "거미인력");
+        assert_eq!(lesson.meaning, "Spider Staffing.");
+        assert!(lesson.grammar.is_empty());
+        assert_eq!(lesson.vocab.len(), 2);
+        assert_eq!(lesson.vocab[0].word, "거미");
+        assert_eq!(lesson.vocab[0].meaning, "spider");
+        assert_eq!(lesson.vocab[1].word, "인력");
+        assert_eq!(lesson.vocab[1].hanja, "人力");
+        assert_eq!(lesson.vocab[1].meaning, "manpower");
+        let script = compile(lesson, Timing::default());
+        let expect = [("거미", "거미"), ("인력 人力", "인력")];
+        for (word, span) in expect {
+            let line = script.lines.iter().find(|l| l.word() == Some(word)).unwrap();
+            let (a, b) = line.span.expect(word);
+            assert_eq!(&lesson.korean[a..b], span, "{word}");
+        }
+    }
+
+    #[test]
+    fn dead_end_job_parse_hits_the_written_form() {
+        let expect = [
+            (0, "생은", "생은"),
+            (0, "망한", "망한"),
+            (0, "망하다", "망"),
+            (3, "알아보러", "알아보러"),
+            (3, "오셨어요", "오셨어요"),
+            (4, "시작하다", "시작하"),
+            (4, "시작하고요", "시작하고요"),
+            (5, "일당으로", "일당으로"),
+            (8, "성공하시면", "성공하시면"),
+            (11, "저주예요", "저주예요"),
+            (12, "살려", "살려"),
+            (19, "나갈", "나갈"),
+            (20, "할 수 있다", "할 수 있다"),
+            (22, "곳인지", "곳인지"),
+            (24, "세우라고", "세우라고"),
+            (26, "갈 수 있나", "갈 수 있나"),
+            (26, "해보시죠", "해보시죠"),
+            (27, "악몽이라뇨", "악몽이라뇨"),
+            (28, "뭘", "뭘"),
+        ];
+        for (episode, word, span) in expect {
+            let lesson = crate::content::get(3, episode).unwrap();
+            let script = compile(lesson, Timing::default());
+            let line = script
+                .lines
+                .iter()
+                .find(|l| l.word().is_some_and(|w| w == word || w.starts_with(word)))
+                .unwrap_or_else(|| panic!("missing {word}"));
+            let shown = line.span.map(|(a, b)| &lesson.korean[a..b]).unwrap_or("NONE");
+            assert_eq!(shown, span, "{word}");
+        }
+    }
+
+    #[test]
+    fn dead_end_job_verbs_are_dictionary_forms() {
+        let wage = crate::content::get(3, 4).unwrap();
+        assert_eq!(wage.korean, "최저 시급의 기본 10배부터 시작하고요");
+        assert!(wage
+            .vocab
+            .iter()
+            .any(|item| item.word == "시작하다" && item.meaning == "to start"));
+        assert!(wage
+            .vocab
+            .iter()
+            .all(|item| item.word != "시작하고요" && item.meaning != "and it starts"));
+        assert!(wage
+            .grammar
+            .iter()
+            .any(|item| item.word == "시작하고요" && item.meaning.starts_with("시작하다 +")));
+        for lesson in crate::content::dead_end_job::LESSONS {
+            for item in lesson.vocab {
+                assert!(!item.word.contains('/') && !item.word.contains('+'), "{}", item.word);
+                assert!(!item.meaning.contains('/'), "{} {}", item.word, item.meaning);
+                assert!(
+                    lesson.grammar.iter().all(|g| g.word != item.word),
+                    "ep {} vocab repeats inflected {}",
+                    lesson.episode,
+                    item.word
+                );
+            }
+            for item in lesson.grammar {
+                assert!(!item.meaning.contains('/'), "ep {} {}", lesson.episode, item.meaning);
+                if item.word.contains('의') {
+                    assert!(
+                        item.meaning.contains("of ") && !item.meaning.contains("'s"),
+                        "의 is of, not 's: {}",
+                        item.meaning
+                    );
+                }
+                let cited = item.meaning.split(" + ").next().unwrap_or("");
+                if cited.ends_with('다') {
+                    assert!(
+                        lesson.vocab.iter().any(|v| v.word == cited),
+                        "ep {} grammar {} cites {cited} but vocab has no dictionary verb",
+                        lesson.episode,
+                        item.word
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn dead_end_job_after_twenty_seconds_is_the_short_window_hearing() {
+        let lines: Vec<_> = (0..29)
+            .map(|n| crate::content::get(3, n).unwrap().korean)
+            .collect();
+        assert!(lines.iter().any(|k| k.contains("기본 10배부터")));
+        assert!(lines.iter().any(|k| k.contains("바로 드립니다")));
+        assert!(lines.iter().any(|k| *k == "하루 뜨고 오세요"));
+        assert!(lines.iter().any(|k| k.contains("성공하시면")));
+        assert!(lines.iter().any(|k| *k == "살려! 살려!"));
+        assert!(lines.iter().any(|k| *k == "문을 세우라고"));
+        assert!(lines.iter().all(|k| !k.contains("죽어")));
+        assert!(lines.iter().all(|k| !k.contains("하루만 버티")));
+        assert!(lines.iter().all(|k| !k.contains("열 배부터")));
+        assert!(lines.iter().all(|k| !k.contains("수행하시면")));
+        let boss = crate::content::get(3, 27).unwrap();
+        assert_eq!(boss.korean, "악몽이라뇨. 알바죠, 꿀알바");
+        assert!(boss.korean.contains("꿀알바"), "27 stopped at 악몽이라뇨");
+        let script = compile(boss, Timing::default());
+        let gig = script
+            .lines
+            .iter()
+            .find(|l| l.word() == Some("꿀알바"))
+            .expect("꿀알바");
+        let (a, b) = gig.span.expect("꿀알바");
+        assert_eq!(&boss.korean[a..b], "꿀알바");
+        let reply = crate::content::get(3, 28).unwrap();
+        assert_eq!(reply.korean, "뭘 알바?");
+        let stop = crate::content::get(3, 24).unwrap();
+        let script = compile(stop, Timing::default());
+        let door = script.lines.iter().find(|l| l.word() == Some("문 門")).unwrap();
+        let (a, b) = door.span.expect("문");
+        assert_eq!(&stop.korean[a..b], "문");
+        let plea = crate::content::get(3, 12).unwrap();
+        let script = compile(plea, Timing::default());
+        let save = script.lines.iter().find(|l| l.word() == Some("살려")).unwrap();
+        let (a, b) = save.span.expect("살려");
+        assert_eq!(&plea.korean[a..b], "살려");
+    }
 }
