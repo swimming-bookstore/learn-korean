@@ -37,7 +37,7 @@ Two modes, like Euclid:
 
 A new day is a `Lesson` in `src/content/`. Hash `#/1/12` is 퇴사할게여 episode 12.
 Hash `#/2` and `#/2/0` are 참교육 00. `#/2/1` is 참교육 01. `#/2/2` is 참교육 02. `#/2/3` is 참교육 03. `#/2/6` is 참교육 06. `#/2/12` through `#/2/15` are 참교육 12–15. `#/2/18` is 참교육 18, the last episode.
-Hash `#/3/2` is 막다른 일자리 02, 거미인력. Spider plus manpower. The company name is Spider Staffing.
+Hash `#/3/2` is 막다른 일자리 02, 거미인력. The company name is Spider Staffing, not spider plus manpower.
 
 YouTube: upload `docs/toesa-dayNN.mp4` or `docs/chamgyoyuk-dayNN.mp4` as a Short.
 Title idea: `1 · 퇴사할게여 | Learn Korean`.

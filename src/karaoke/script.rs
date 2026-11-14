@@ -826,24 +826,22 @@ mod tests {
     }
 
     #[test]
-    fn dead_end_job_company_name_is_spider_plus_manpower() {
+    fn dead_end_job_company_name_is_spider_staffing() {
         let lesson = crate::content::get(3, 2).unwrap();
         assert_eq!(lesson.korean, "거미인력");
         assert_eq!(lesson.meaning, "Spider Staffing.");
         assert!(lesson.grammar.is_empty());
-        assert_eq!(lesson.vocab.len(), 2);
-        assert_eq!(lesson.vocab[0].word, "거미");
-        assert_eq!(lesson.vocab[0].meaning, "spider");
-        assert_eq!(lesson.vocab[1].word, "인력");
-        assert_eq!(lesson.vocab[1].hanja, "人力");
-        assert_eq!(lesson.vocab[1].meaning, "manpower");
+        assert_eq!(lesson.vocab.len(), 1);
+        assert_eq!(lesson.vocab[0].word, "거미인력");
+        assert_eq!(lesson.vocab[0].meaning, "Spider Staffing");
         let script = compile(lesson, Timing::default());
-        let expect = [("거미", "거미"), ("인력 人力", "인력")];
-        for (word, span) in expect {
-            let line = script.lines.iter().find(|l| l.word() == Some(word)).unwrap();
-            let (a, b) = line.span.expect(word);
-            assert_eq!(&lesson.korean[a..b], span, "{word}");
-        }
+        let line = script
+            .lines
+            .iter()
+            .find(|l| l.word() == Some("거미인력"))
+            .unwrap();
+        let (a, b) = line.span.expect("거미인력");
+        assert_eq!(&lesson.korean[a..b], "거미인력");
     }
 
     #[test]

@@ -27,7 +27,8 @@
 //! as 퇴사할게여, and the same note sizes. A card taller than the panel
 //! scrolls to the word being read. The sung line stays where it is. The
 //! notes scroll under that line, not over it: a note pulled up to the top
-//! of the card covers the sentence.
+//! of the card covers the sentence. The sentence is painted again after the
+//! notes, on a paper cover, so a scrolled line cannot show through it.
 //!
 //! Vocabulary is the dictionary stem. A verb ends in 다 (처리되다, not
 //! 처리된다). Grammar is that stem plus the particle or ending, the same
@@ -1195,10 +1196,11 @@ fn panel_draws(
     } else {
         None
     };
+    let mut sentence_box = None;
     if let Some(rows) = rows.as_ref() {
         if let Some(row) = rows.iter().find(|r| r.kind == 's') {
             let box_h = 10 + lesson.ko.len() as i32 * (size + 6);
-            draws.push(format!(
+            sentence_box = Some(format!(
                 "drawbox=x={}:y={}:w=352:h={box_h}:color={GOLD}:t=fill:enable='between(t,{:.3},{:.3})'",
                 x - 8,
                 title_y - 6,
@@ -1208,12 +1210,14 @@ fn panel_draws(
         }
     }
     let mut y = title_y;
+    let mut sentence = Vec::new();
     for (j, line) in lesson.ko.iter().enumerate() {
         let file = write_text(&format!("{index:02}_{mode}_ko{j}.txt"), line)?;
-        draws.push(draw_line(FONT_KR, &file, size, INK, x, y));
+        sentence.push(draw_line(FONT_KR, &file, size, INK, x, y));
         y += size + 6;
     }
     let Some(rows) = rows else {
+        draws.extend(sentence);
         return Ok(draws);
     };
     // Same gap and sizes as 퇴사할게여. Shrinking the notes was what made
@@ -1291,6 +1295,19 @@ fn panel_draws(
             ));
         }
     }
+    // Notes are drawn after the sentence, so a scrolled line shows through it.
+    // The gap under the line is part of that band. Cover both, then put the
+    // sentence back on top.
+    let cover_h = y + 18 - (title_y - 6);
+    draws.push(format!(
+        "drawbox=x={}:y={}:w=364:h={cover_h}:color={PAPER}:t=fill",
+        x - 8,
+        title_y - 6
+    ));
+    if let Some(box_draw) = sentence_box {
+        draws.push(box_draw);
+    }
+    draws.extend(sentence);
     Ok(draws)
 }
 
@@ -2015,6 +2032,13 @@ mod tests {
         assert!(panel.contains("16"), "meaning is 16, same as 퇴사");
         assert!(!panel.contains(", 11, MUTED"), "section labels were shrunk to 11");
         assert!(panel.contains("note.y - shift"), "a long card scrolls instead of shrinking");
+        assert!(
+            panel.contains("color={PAPER}:t=fill"),
+            "the sentence cover is missing, so a scrolled note shows through it"
+        );
+        let cover_at = panel.rfind("color={PAPER}:t=fill").unwrap();
+        let redraw_at = panel.rfind("draws.extend(sentence)").unwrap();
+        assert!(cover_at < redraw_at, "the sentence must be painted after the cover");
         let lesson = &LESSONS[0];
         let prep = Prepared {
             beats: lesson_beats(lesson),

@@ -29,8 +29,8 @@ const fn lesson(
 /// not "'s", because A의 B is "B of A".
 ///
 /// Grammar is the written eojeol: that dictionary stem, then the particle or
-/// ending. 거미인력 is spider plus manpower, not stuffing, so the name stays
-/// one word and is not parsed apart.
+/// ending. 거미인력 is the company name Spider Staffing, so the name stays
+/// one word and is not parsed into spider plus manpower.
 pub const LESSONS: &[Lesson] = &[
     lesson(
         0,
@@ -65,7 +65,7 @@ pub const LESSONS: &[Lesson] = &[
         2,
         "거미인력",
         "Spider Staffing.",
-        &[v("거미", "spider"), vh("인력", "人力", "manpower")],
+        &[v("거미인력", "Spider Staffing")],
         &[],
     ),
     lesson(
