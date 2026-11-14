@@ -31,6 +31,7 @@ SERIES = {
     "toesa": (1, list(range(1, 32))),
     "chamgyoyuk": (2, list(range(0, 19))),
     "dead-end-job": (3, list(range(0, 29))),
+    "squid-game": (4, list(range(0, 19))),
 }
 
 

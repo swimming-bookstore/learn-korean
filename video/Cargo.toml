@@ -12,3 +12,7 @@ path = "src/main.rs"
 [[bin]]
 name = "dead-end-job"
 path = "src/dead_end.rs"
+
+[[bin]]
+name = "squid-game"
+path = "src/squid.rs"

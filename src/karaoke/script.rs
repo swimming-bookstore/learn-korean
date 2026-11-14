@@ -970,4 +970,53 @@ mod tests {
         let (a, b) = save.span.expect("살려");
         assert_eq!(&plea.korean[a..b], "살려");
     }
+
+    #[test]
+    fn squid_game_parse_hits_the_written_form() {
+        let flower = crate::content::get(4, 4).unwrap();
+        assert_eq!(flower.korean, "무궁화 꽃이 피었습니다");
+        assert!(flower
+            .vocab
+            .iter()
+            .any(|item| item.word == "피다" && item.meaning == "to bloom"));
+        assert!(flower.vocab.iter().all(|item| item.word != "피었습니다"));
+        assert!(flower
+            .grammar
+            .iter()
+            .any(|item| item.word == "피었습니다" && item.meaning.starts_with("피다 +")));
+        let of_game = crate::content::get(4, 2).unwrap();
+        assert!(of_game
+            .grammar
+            .iter()
+            .any(|item| item.word == "게임의" && item.meaning.contains("of the game")));
+        assert!(of_game.grammar.iter().all(|item| !item.meaning.contains("'s")));
+        let rule = crate::content::get(4, 18).unwrap();
+        assert_eq!(rule.korean, "게임을 거부하는 참가자는 탈락으로 처리된다");
+        let script = compile(rule, Timing::default());
+        let treated = script
+            .lines
+            .iter()
+            .find(|l| l.word() == Some("처리된다"))
+            .expect("처리된다");
+        let (a, b) = treated.span.expect("처리된다");
+        assert_eq!(&rule.korean[a..b], "처리된다");
+        for lesson in crate::content::squid::LESSONS {
+            for item in lesson.vocab {
+                assert!(!item.word.contains('/') && !item.word.contains('+'), "{}", item.word);
+                assert!(!item.meaning.contains('/'), "{} {}", item.word, item.meaning);
+            }
+            for item in lesson.grammar {
+                assert!(!item.meaning.contains('/'), "ep {} {}", lesson.episode, item.meaning);
+                let cited = item.meaning.split(" + ").next().unwrap_or("");
+                if cited.ends_with('다') {
+                    assert!(
+                        lesson.vocab.iter().any(|v| v.word == cited),
+                        "ep {} grammar {} cites {cited} but vocab has no dictionary verb",
+                        lesson.episode,
+                        item.word
+                    );
+                }
+            }
+        }
+    }
 }

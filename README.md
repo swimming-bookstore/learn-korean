@@ -7,7 +7,8 @@ read the lesson, or Play / `?record=1` for a 9:16 YouTube Short.
 Phrase notes follow [퇴사할게여](https://github.com/whs-dot-hk/i-m-gonna-toesa):
 the line, then **vocabulary**, then **grammar**. Series so far: `#/1` 퇴사할게여
 (episodes 1–31), `#/2` 참교육 (00, then 01, 02, 03), `#/3` 막다른 일자리
-(Dead-End Job trailer, episodes 00–28).
+(Dead-End Job trailer, episodes 00–28), `#/4` 오징어 게임 (official trailer,
+episodes 00–18).
 
 ```bash
 trunk serve
@@ -78,6 +79,17 @@ cargo run --release --manifest-path video/Cargo.toml --bin dead-end-job
 ```
 
 That writes `docs/dead-end-job.mp4`. `--draft` renders the first two lines only.
+
+The Squid Game trailer is the same shape. Source is the official Netflix
+trailer. The cut is the quiet after the line. A long recognition pass smears
+the opening across the music and hears 빚을 치고; the lines come from windows
+under 20 seconds, and the first pause is after 지고.
+
+```bash
+cargo run --release --manifest-path video/Cargo.toml --bin squid-game
+```
+
+That writes `docs/squid-game.mp4`. `--draft` renders the first two lines only.
 
 ## GitHub Pages
 
