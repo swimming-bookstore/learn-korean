@@ -33,6 +33,8 @@
 //! Vocabulary is the dictionary stem. A verb ends in 다 (처리되다, not
 //! 처리된다). Grammar is that stem plus the particle or ending, the same
 //! split as 참교육. 의 is "of", not a slash and not "'s".
+//! The card shows the formula. The English voice reads only the gloss in
+//! parentheses, or it says the stem and the particle as if they were English.
 
 use std::fs::{self, File};
 use std::io::{Read, Write};
@@ -709,7 +711,7 @@ fn lesson_beats(lesson: &Lesson) -> Vec<Beat> {
         beats.push(Beat {
             kind: 'g',
             lang: "en",
-            spoken: speakable(note.en),
+            spoken: speakable_en(note.en),
             shown: note.en.to_string(),
             hanja: String::new(),
         });
@@ -790,6 +792,17 @@ fn speakable(text: &str) -> String {
     } else {
         joined
     }
+}
+
+/// The card still shows the formula. The English voice reads only the gloss.
+/// Left whole, it says the stem and the particle: "빚 을 the debt, object".
+fn speakable_en(text: &str) -> String {
+    let gloss = text
+        .rsplit_once('(')
+        .map(|(_, rest)| rest.trim().trim_end_matches(')'))
+        .filter(|gloss| !gloss.is_empty() && !gloss.chars().any(|ch| ('\u{ac00}'..='\u{d7a3}').contains(&ch)))
+        .unwrap_or(text);
+    speakable(gloss)
 }
 
 fn font_for(text: &str, bold: bool) -> &'static str {
@@ -2134,8 +2147,9 @@ mod tests {
                 }
             }
         }
-        let spoken = speakable("피다 + 었 + 습니다 (has bloomed)");
-        assert_eq!(spoken, "피다 었 습니다 has bloomed");
+        let spoken = speakable_en("피다 + 었 + 습니다 (has bloomed)");
+        assert_eq!(spoken, "has bloomed");
+        assert!(!spoken.contains("피다"));
         assert!(!spoken.contains('/'));
     }
 
