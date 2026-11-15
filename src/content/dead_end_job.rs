@@ -10,7 +10,7 @@ const fn lesson(
     Lesson {
         series_n: 3,
         episode,
-        series: "막다른 일자리",
+        series: "꿀알바",
         korean,
         meaning,
         vocab,
