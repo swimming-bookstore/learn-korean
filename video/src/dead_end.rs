@@ -2,6 +2,8 @@
 //!
 //! The picture plays once, on the left. The right side is remarks only.
 //! Korean lines come from the trailer audio, not from a translation.
+//! The company on the card is 거미인력, Spider Staffing. The series name
+//! 막다른 일자리 is the Korean title, not the company.
 //!
 //! A single speech-recognition pass breaks after about 20 seconds: the rest
 //! of the clip is dropped or garbled. Windows stay under that limit, and the
@@ -23,11 +25,17 @@
 //! On the pause the voice reads the whole line, and the card lights that line.
 //! Then it walks vocabulary one by one — Korean, then English — then each
 //! grammar point, then its meaning, then the meaning of the line. Same order
-//! as 퇴사할게여.
+//! as 퇴사할게여, and the same note sizes. A card taller than the panel
+//! scrolls to the word being read. The sung line stays where it is. The
+//! notes scroll under that line, not over it: a note pulled up to the top
+//! of the card covers the sentence. The sentence is painted again after the
+//! notes, on a paper cover, so a scrolled line cannot show through it.
 //!
 //! Vocabulary is the dictionary stem. A verb ends in 다 (시작하다, not
 //! 시작하고요). Grammar is that stem plus the particle or ending, the same
 //! split as 참교육. 의 is "of", not a slash and not "'s".
+//! The card shows the formula. The English voice reads only the gloss in
+//! parentheses, or it says the stem and the particle as if they were English.
 
 use std::fs::{self, File};
 use std::io::{Read, Write};
@@ -39,6 +47,16 @@ use std::time::Duration;
 const ROOT: &str = "/home/packer/learn-korean/work";
 const TRAILER: &str = "/home/packer/ai-reaction/work/trailer.mp4";
 const OUT: &str = "/home/packer/learn-korean/docs/dead-end-job.mp4";
+/// Part 1 is the first ten lines, 00 through 09. It ends on the pause after
+/// 일당이 최소 두 배, not in the middle of the next line. A frame count past
+/// that pause keeps the trailer playing with a blank card: the next line has
+/// started and the notes have not.
+const OUT_1: &str = "/home/packer/learn-korean/docs/dead-end-job-1.mp4";
+/// Ten lines, indexes 0 through 9. Line 10 is the next part.
+const PART_1_LINES: usize = 10;
+/// Part 1 thumbnail is that same shot in the lesson file: frame 2011,
+/// 1:23.88. The trailer frame at 12.97s is the full picture, not this card.
+const THUMB_1: &str = "/home/packer/learn-korean/docs/youtube-dead-end-job-1.png";
 const FONT_KR: &str = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc";
 const FONT_B: &str = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf";
 const FONT: &str = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
@@ -137,7 +155,7 @@ static LESSONS: &[Lesson] = &[
         pause_at: 6.76,
         ko: &["거미인력"],
         en: &["Spider Staffing."],
-        words: &[w("거미", "spider", ""), w("인력", "manpower", "人力")],
+        words: &[w("거미인력", "Spider Staffing", "")],
         grammar: &[],
         say: "거미인력.",
     },
@@ -554,8 +572,22 @@ fn run() -> Result<(), String> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let draft = args.iter().any(|a| a == "--draft");
     let plan_only = args.iter().any(|a| a == "--plan");
+    let only = args.iter().find_map(|a| a.strip_prefix("--only="));
+    let part = args.iter().find_map(|a| a.strip_prefix("--part="));
     validate()?;
-    let selected: Vec<usize> = if draft {
+    let selected: Vec<usize> = if let Some(only) = only {
+        let i: usize = only.parse().map_err(|_| format!("bad --only={only}"))?;
+        if i >= LESSONS.len() {
+            return Err(format!("--only={i} past the last line"));
+        }
+        vec![i]
+    } else if let Some(part) = part {
+        let n: usize = part.parse().map_err(|_| format!("bad --part={part}"))?;
+        if n == 0 || n > 2 {
+            return Err(format!("--part={n} is past the last line"));
+        }
+        part_indexes(n)
+    } else if draft {
         (0..2).collect()
     } else {
         (0..LESSONS.len()).collect()
@@ -568,14 +600,25 @@ fn run() -> Result<(), String> {
         return Err(format!("missing source video {TRAILER}"));
     }
     let prepared = prepare_voices(&selected)?;
-    let end = if draft {
+    // A part ends on its last pause. The end card and the trailer tail belong
+    // to the full lesson, not to a slice that still has lines left.
+    let end = if draft || only.is_some() || part.is_some() {
         None
     } else {
         Some(prepare_end()?)
     };
     let (script, frames) = build(&selected, &prepared, end.as_ref())?;
-    render(&script, &prepared, end.as_ref(), draft, frames)?;
+    render(&script, &prepared, end.as_ref(), draft, part, frames)?;
     Ok(())
+}
+
+/// Part 1 is the first ten lines. The cut is the pause after that tenth line.
+/// Playing on into the next syllable is the blank card at the end of the file.
+fn part_indexes(part: usize) -> Vec<usize> {
+    match part {
+        1 => (0..PART_1_LINES).collect(),
+        _ => (PART_1_LINES..LESSONS.len()).collect(),
+    }
 }
 
 fn validate() -> Result<(), String> {
@@ -752,7 +795,7 @@ fn lesson_beats(lesson: &Lesson) -> Vec<Beat> {
         beats.push(Beat {
             kind: 'g',
             lang: "en",
-            spoken: speakable(note.en),
+            spoken: speakable_en(note.en),
             shown: note.en.to_string(),
             hanja: String::new(),
         });
@@ -833,6 +876,17 @@ fn speakable(text: &str) -> String {
     } else {
         joined
     }
+}
+
+/// The card still shows the formula. The English voice reads only the gloss.
+/// Left whole, it says the stem and the particle: "일당 으로 as a day's pay".
+fn speakable_en(text: &str) -> String {
+    let gloss = text
+        .rsplit_once('(')
+        .map(|(_, rest)| rest.trim().trim_end_matches(')'))
+        .filter(|gloss| !gloss.is_empty() && !gloss.chars().any(|ch| ('\u{ac00}'..='\u{d7a3}').contains(&ch)))
+        .unwrap_or(text);
+    speakable(gloss)
 }
 
 fn font_for(text: &str, bold: bool) -> &'static str {
@@ -1110,14 +1164,81 @@ fn draw_timed(
     size: i32,
     color: &str,
     x: i32,
-    y: i32,
+    y: &str,
     start: f64,
     end: f64,
 ) -> String {
+    // `n` is the trailer frame, not the pause frame. A pause that starts at
+    // frame 52 never sees n=0, so the box stays on the sentence. `t` is this
+    // pause: the stage clock starts at 0.
     format!(
         "drawtext=fontfile={font}:textfile={}:fontsize={size}:fontcolor={color}:x={x}:y={y}:enable='between(t,{start:.3},{end:.3})'",
         file.display()
     )
+}
+
+fn draw_box(x: i32, y: &str, h: i32, color: &str, start: f64, end: f64) -> String {
+    format!(
+        "drawbox=x={x}:y={y}:w=352:h={h}:color={color}:t=fill:enable='between(t,{start:.3},{end:.3})'"
+    )
+}
+
+/// Notes use the same sizes as 퇴사할게여. A long card is taller than the
+/// panel, so it scrolls to the word being read. The sung line stays put.
+/// A note stops at the gap under that line. Scrolling it to the top of the
+/// card is what laid the vocab box over the sentence.
+/// `stops` are (time, shift). Shift is how far the notes move up.
+fn note_shift(layout: &[Note], floor: i32) -> Vec<(f64, i32)> {
+    let mut shift = 0i32;
+    let mut stops = Vec::new();
+    for note in layout {
+        let bottom = note.y + note.h - shift;
+        if bottom > 700 {
+            let next = shift + (bottom - 700) + 8;
+            // Each note keeps its own gap under the line. A shift saved from
+            // a taller note above it pulls this one up onto the sentence.
+            let max_shift = (note.y - floor).max(0);
+            let capped = next.min(max_shift);
+            if capped != shift {
+                stops.push((note.at, capped));
+            }
+            shift = capped;
+        }
+    }
+    stops
+}
+
+/// `drawbox` reads `t` once, when the filter starts, and that `t` is the
+/// whole pause. A scroll expression then jumps to the last stop, and the
+/// first word is drawn on the sentence. The position has to be a number.
+/// The pause is split at each stop so each stretch has its own number.
+fn scroll_spans(stops: &[(f64, i32)], frames: i64) -> Vec<(i64, i64, i32)> {
+    let mut spans = Vec::new();
+    let mut cursor = 0i64;
+    let mut shift = 0i32;
+    for (t, next) in stops {
+        let at = frame_at(*t).clamp(0, frames);
+        if at > cursor {
+            spans.push((cursor, at, shift));
+            cursor = at;
+        }
+        shift = *next;
+    }
+    if cursor < frames {
+        spans.push((cursor, frames, shift));
+    }
+    spans
+}
+
+fn pause_stops(layout: &[Note], stops: &[(f64, i32)]) -> Vec<(f64, i32)> {
+    // The pause clock starts at the first note, not at the first note that
+    // overflows. Measuring from the overflow jumps the card before that word
+    // is read, and the vocab box lands on the sentence.
+    let origin = layout.iter().map(|n| n.at).fold(f64::MAX, f64::min);
+    stops
+        .iter()
+        .map(|(t, shift)| ((t - origin).max(0.0), *shift))
+        .collect()
 }
 
 fn header_draws() -> Result<Vec<String>, String> {
@@ -1139,6 +1260,8 @@ fn panel_draws(
     prep: Option<&Prepared>,
     index: usize,
     n: usize,
+    shift: i32,
+    origin: f64,
 ) -> Result<Vec<String>, String> {
     let mut draws = Vec::new();
     let x = PX;
@@ -1164,7 +1287,7 @@ fn panel_draws(
     } else if longest > 8 {
         28
     } else {
-        30
+        32
     };
     let title_y = 138;
     let rows = if mode == "hold" {
@@ -1173,28 +1296,144 @@ fn panel_draws(
     } else {
         None
     };
+    let mut sentence_box = None;
     if let Some(rows) = rows.as_ref() {
         if let Some(row) = rows.iter().find(|r| r.kind == 's') {
             let box_h = 10 + lesson.ko.len() as i32 * (size + 6);
-            draws.push(format!(
+            sentence_box = Some(format!(
                 "drawbox=x={}:y={}:w=352:h={box_h}:color={GOLD}:t=fill:enable='between(t,{:.3},{:.3})'",
                 x - 8,
                 title_y - 6,
-                row.ko_t,
-                row.hi_end
+                (row.ko_t - origin).max(0.0),
+                (row.hi_end - origin).max(0.0)
             ));
         }
     }
     let mut y = title_y;
+    let mut sentence = Vec::new();
     for (j, line) in lesson.ko.iter().enumerate() {
         let file = write_text(&format!("{index:02}_{mode}_ko{j}.txt"), line)?;
-        draws.push(draw_line(FONT_KR, &file, size, INK, x, y));
+        sentence.push(draw_line(FONT_KR, &file, size, INK, x, y));
         y += size + 6;
     }
     let Some(rows) = rows else {
+        draws.extend(sentence);
         return Ok(draws);
     };
-    y = (y + 8).max(188);
+    // Same gap and sizes as 퇴사할게여. Shrinking the notes was what made
+    // vocabulary, grammar, and meaning look smaller than that lesson.
+    let layout = note_layout(lesson, &rows);
+    // A number, not an expression. drawbox bakes a `t` expression at the
+    // end of the pause, which is what put the first word on the sentence.
+    for note in &layout {
+        let y = note.y - shift;
+        let yexpr = y.to_string();
+        let at = (note.at - origin).max(0.0);
+        let hi = (note.hi_end - origin).max(0.0);
+        if note.kind == 'h' {
+            let file = write_text(&format!("{index:02}_sec{}.txt", note.j), &note.text)?;
+            draws.push(draw_timed(FONT_B, &file, 12, MUTED, x, &yexpr, at, 999.0));
+            continue;
+        }
+        if note.kind == 'm' {
+            draws.push(draw_box(x - 8, &yexpr, note.h, MEANING, at, hi));
+            for (k, line) in note.en.iter().enumerate() {
+                let file = write_text(&format!("{index:02}_m{k}.txt"), line)?;
+                let dy = 4 + 22 * k as i32;
+                draws.push(draw_timed(
+                    font_for(line, false),
+                    &file,
+                    16,
+                    INK,
+                    x,
+                    &format!("({yexpr})+{dy}"),
+                    at,
+                    999.0,
+                ));
+            }
+            continue;
+        }
+        let color = if note.kind == 'v' { GOLD } else { BLUE };
+        draws.push(draw_box(x - 8, &yexpr, note.h, color, at, hi));
+        let file = write_text(&format!("{index:02}_w{}.txt", note.j), &note.text)?;
+        draws.push(draw_timed(
+            font_for(&note.text, false),
+            &file,
+            18,
+            INK,
+            x,
+            &format!("({yexpr})+4"),
+            at,
+            999.0,
+        ));
+        if !note.hanja.is_empty() {
+            let file = write_text(&format!("{index:02}_hz{}.txt", note.j), &note.hanja)?;
+            let hx = hanja_x(x, &note.text, 18);
+            draws.push(draw_timed(
+                FONT_KR,
+                &file,
+                16,
+                HANJA,
+                hx,
+                &format!("({yexpr})+5"),
+                at,
+                999.0,
+            ));
+        }
+        for (k, line) in note.en.iter().enumerate() {
+            let file = write_text(&format!("{index:02}_we{}_{k}.txt", note.j), line)?;
+            let dy = 26 + 18 * k as i32;
+            draws.push(draw_timed(
+                font_for(line, false),
+                &file,
+                14,
+                "0x5C574E",
+                x,
+                &format!("({yexpr})+{dy}"),
+                at,
+                999.0,
+            ));
+        }
+    }
+    // Notes are drawn after the sentence, so a scrolled line shows through it.
+    // The gap under the line is part of that band. Cover both, then put the
+    // sentence back on top.
+    let cover_h = y + 18 - (title_y - 6);
+    draws.push(format!(
+        "drawbox=x={}:y={}:w=364:h={cover_h}:color={PAPER}:t=fill",
+        x - 8,
+        title_y - 6
+    ));
+    if let Some(box_draw) = sentence_box {
+        draws.push(box_draw);
+    }
+    draws.extend(sentence);
+    Ok(draws)
+}
+
+struct Note {
+    at: f64,
+    y: i32,
+    h: i32,
+    kind: char,
+    text: String,
+    en: Vec<String>,
+    hanja: String,
+    hi_end: f64,
+    j: usize,
+}
+
+fn note_layout(lesson: &Lesson, rows: &[Row]) -> Vec<Note> {
+    let longest = lesson.ko.iter().map(|s| s.chars().count()).max().unwrap_or(0);
+    let size: i32 = if lesson.ko.len() > 2 || longest > 11 {
+        24
+    } else if longest > 8 {
+        28
+    } else {
+        32
+    };
+    let mut y = 138 + lesson.ko.len() as i32 * (size + 6) + 18;
+    let mut layout = Vec::new();
     let mut head = ' ';
     for (j, row) in rows.iter().enumerate() {
         if row.kind == 's' {
@@ -1206,65 +1445,53 @@ fn panel_draws(
                 'g' => "GRAMMAR",
                 _ => "MEANING",
             };
-            let file = write_text(&format!("{index:02}_sec{j}.txt"), label)?;
-            draws.push(draw_timed(FONT_B, &file, 11, MUTED, x, y, row.ko_t, 999.0));
-            y += 14;
+            layout.push(Note {
+                at: row.ko_t,
+                y,
+                h: 18,
+                kind: 'h',
+                text: label.to_string(),
+                en: Vec::new(),
+                hanja: String::new(),
+                hi_end: row.hi_end,
+                j,
+            });
+            y += 22;
             head = row.kind;
         }
         if row.kind == 'm' {
-            let lines = lesson.en;
-            let box_h = 4 + 16 * lines.len() as i32;
-            draws.push(format!(
-                "drawbox=x={}:y={}:w=352:h={box_h}:color={MEANING}:t=fill:enable='between(t,{:.3},{:.3})'",
-                x - 8,
-                y - 4,
-                row.ko_t,
-                row.hi_end
-            ));
-            for (k, line) in lines.iter().enumerate() {
-                let file = write_text(&format!("{index:02}_m{k}.txt"), line)?;
-                draws.push(draw_timed(font_for(line, false), &file, 14, INK, x, y, row.ko_t, 999.0));
-                y += 16;
-            }
-            y += 8;
+            let n = lesson.en.len() as i32;
+            let box_h = 8 + 22 * n;
+            layout.push(Note {
+                at: row.ko_t,
+                y: y - 4,
+                h: box_h,
+                kind: 'm',
+                text: String::new(),
+                en: lesson.en.iter().map(|s| s.to_string()).collect(),
+                hanja: String::new(),
+                hi_end: row.hi_end,
+                j,
+            });
+            y += box_h + 4;
             continue;
         }
-        let ko_font = font_for(&row.ko, false);
-        let en_lines = wrap_en(&row.en, 38);
-        let box_h = 18 + 13 * en_lines.len() as i32;
-        let color = if row.kind == 'v' { GOLD } else { BLUE };
-        draws.push(format!(
-            "drawbox=x={}:y={}:w=352:h={box_h}:color={color}:t=fill:enable='between(t,{:.3},{:.3})'",
-            x - 8,
-            y - 4,
-            row.ko_t,
-            row.hi_end
-        ));
-        let file = write_text(&format!("{index:02}_w{j}.txt"), &row.ko)?;
-        draws.push(draw_timed(ko_font, &file, 16, INK, x, y, row.ko_t, 999.0));
-        if !row.hanja.is_empty() {
-            let file = write_text(&format!("{index:02}_hz{j}.txt"), &row.hanja)?;
-            let hx = hanja_x(x, &row.ko, 16);
-            draws.push(draw_timed(FONT_KR, &file, 16, HANJA, hx, y + 1, row.ko_t, 999.0));
-        }
-        let mut ey = y + 16;
-        for (k, line) in en_lines.iter().enumerate() {
-            let file = write_text(&format!("{index:02}_we{j}_{k}.txt"), line)?;
-            draws.push(draw_timed(
-                font_for(line, false),
-                &file,
-                12,
-                "0x5C574E",
-                x,
-                ey,
-                row.ko_t,
-                999.0,
-            ));
-            ey += 13;
-        }
-        y = ey + 2;
+        let en_lines = wrap_en(&row.en, 32);
+        let box_h = 26 + 18 * en_lines.len() as i32;
+        layout.push(Note {
+            at: row.ko_t,
+            y: y - 4,
+            h: box_h,
+            kind: row.kind,
+            text: row.ko.clone(),
+            en: en_lines,
+            hanja: row.hanja.clone(),
+            hi_end: row.hi_end,
+            j,
+        });
+        y += box_h + 6;
     }
-    Ok(draws)
+    layout
 }
 
 fn stage(label: &str, src: &str, frames: i64) -> (String, String) {
@@ -1306,6 +1533,21 @@ fn lock_voice_audio(tag: &str, input: usize, frames: i64) -> String {
         "[{input}:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,\
          volume=2.4,afade=t=in:d=0.02,\
          apad=whole_len={samples},atrim=end_sample={samples},alimiter=limit=0.9[{tag}a]"
+    )
+}
+
+/// A slice of the explanation. The picture is split where the card scrolls,
+/// so each stretch hears the same stretch of the voice.
+fn lock_voice_slice(tag: &str, input: usize, start: i64, end: i64) -> String {
+    let frames = end - start;
+    let samples = samples_for(frames);
+    format!(
+        "[{input}:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,\
+         atrim=start={:.6}:end={:.6},asetpts=PTS-STARTPTS,volume=2.4{fade},\
+         apad=whole_len={samples},atrim=end_sample={samples},alimiter=limit=0.9[{tag}a]",
+        secs(start),
+        secs(end),
+        fade = if start == 0 { ",afade=t=in:d=0.02" } else { "" }
     )
 }
 
@@ -1387,8 +1629,10 @@ fn build(
         cursor = end_frame;
     }
 
+    // A partial render stops on the last pause. One more second of trailer is
+    // the next line, with no card: that is the extra video after line 10.
     let tail = if indexes.len() < LESSONS.len() {
-        (cursor + frames_for(1.0)).min(SRC_FRAMES)
+        cursor
     } else {
         SRC_FRAMES
     };
@@ -1410,6 +1654,9 @@ fn build(
     }
 
     if let Some((_, end_frames)) = end {
+        if indexes.len() != n {
+            return Err("end card is only part of the full lesson".to_string());
+        }
         let tag = format!("e{seg_i}");
         let end_frames = (*end_frames).max(frames_for(5.0));
         let pad = secs(end_frames) + 0.5;
@@ -1481,7 +1728,7 @@ fn add_play(
     let (hstack, staged) = stage(&tag, &format!("{tag}v"), frames);
     chains.push(hstack);
     let mut draws = header.to_vec();
-    draws.extend(panel_draws(mode, lesson, None, index, n)?);
+    draws.extend(panel_draws(mode, lesson, None, index, n, 0, 0.0)?);
     chains.push(lock_picture(&staged, &tag, &draws, frames));
     chains.push(lock_trailer_audio(&tag, start, end));
     vlabels.push(format!("[{tag}]"));
@@ -1510,28 +1757,56 @@ fn add_hold(
     if frame < 0 || frame + 1 > SRC_FRAMES {
         return Err(format!("freeze frame {frame} outside source"));
     }
-    let tag = format!("h{seg_i}");
-    let extra = frames - 1;
-    // One real source frame, looped. Not a 40 ms trim: that window is empty
-    // when the cut lands on a frame, and the picture then jumps the whole pause.
-    // setpts=N keeps the source clock, 1/24000. A short pause is then under
-    // one output tick, fps emits nothing, and the notes never appear.
-    // N*1001/24000/TB is one tick per frame, so a short pause still holds.
-    chains.push(format!(
-        "[0:v]trim=start_frame={frame}:end_frame={next},setpts=PTS-STARTPTS,\
-         loop=loop={extra}:size=1:start=0,trim=end_frame={frames},setpts=N*1001/24000/TB,fps={FPS},settb=1001/24000,format=yuv420p[{tag}v]",
-        next = frame + 1
-    ));
-    let (hstack, staged) = stage(&tag, &format!("{tag}v"), frames);
-    chains.push(hstack);
-    let mut draws = header.to_vec();
-    draws.extend(panel_draws("hold", lesson, Some(prep), index, n)?);
-    chains.push(lock_picture(&staged, &tag, &draws, frames));
-    chains.push(lock_voice_audio(&tag, voice_input, frames));
-    vlabels.push(format!("[{tag}]"));
-    alabels.push(format!("[{tag}a]"));
-    *seg_i += 1;
-    Ok(frames)
+    let rows = card_plan(prep, lesson);
+    let layout = note_layout(lesson, &rows);
+    let longest = lesson.ko.iter().map(|s| s.chars().count()).max().unwrap_or(0);
+    let size: i32 = if lesson.ko.len() > 2 || longest > 11 {
+        24
+    } else if longest > 8 {
+        28
+    } else {
+        32
+    };
+    let line_bottom = 138 + lesson.ko.len() as i32 * (size + 6);
+    let stops = pause_stops(&layout, &note_shift(&layout, line_bottom + 18));
+    let spans = scroll_spans(&stops, frames);
+    let mut held = 0i64;
+    for (start, end, shift) in spans {
+        let span = end - start;
+        if span < 1 {
+            continue;
+        }
+        let tag = format!("h{seg_i}");
+        let extra = span - 1;
+        // One real source frame, looped. Not a 40 ms trim: that window is empty
+        // when the cut lands on a frame, and the picture then jumps the whole pause.
+        // The scroll is a number on this stretch. A `t` expression is read once,
+        // at the end of the pause, and that is what put the first word on the sentence.
+        chains.push(format!(
+            "[0:v]trim=start_frame={frame}:end_frame={next},setpts=PTS-STARTPTS,\
+             loop=loop={extra}:size=1:start=0,trim=end_frame={span},setpts=N*1001/24000/TB,fps={FPS},settb=1001/24000,format=yuv420p[{tag}v]",
+            next = frame + 1
+        ));
+        let (hstack, staged) = stage(&tag, &format!("{tag}v"), span);
+        chains.push(hstack);
+        let mut draws = header.to_vec();
+        draws.extend(panel_draws(
+            "hold",
+            lesson,
+            Some(prep),
+            index,
+            n,
+            shift,
+            secs(start),
+        )?);
+        chains.push(lock_picture(&staged, &tag, &draws, span));
+        chains.push(lock_voice_slice(&tag, voice_input, start, end));
+        vlabels.push(format!("[{tag}]"));
+        alabels.push(format!("[{tag}a]"));
+        *seg_i += 1;
+        held += span;
+    }
+    Ok(held)
 }
 
 fn render(
@@ -1539,14 +1814,18 @@ fn render(
     prepared: &[Prepared],
     end: Option<&(PathBuf, i64)>,
     draft: bool,
+    part: Option<&str>,
     expect_frames: i64,
 ) -> Result<(), String> {
-    let out = if draft {
+    let partial = draft || part.is_some() || prepared.len() != LESSONS.len();
+    let out = if part == Some("1") {
+        PathBuf::from(OUT_1)
+    } else if partial {
         PathBuf::from(ROOT).join("dead-draft.mp4")
     } else {
         PathBuf::from(OUT)
     };
-    let building = PathBuf::from(ROOT).join(if draft {
+    let building = PathBuf::from(ROOT).join(if partial {
         "dead-draft-build.mp4"
     } else {
         "dead-end-build.mp4"
@@ -1563,9 +1842,9 @@ fn render(
         .arg(script)
         .args(["-map", "[vout]", "-map", "[aout]"])
         .args(["-c:v", "libx264", "-preset"])
-        .arg(if draft { "ultrafast" } else { "veryfast" })
+        .arg(if partial { "ultrafast" } else { "veryfast" })
         .args(["-crf"])
-        .arg(if draft { "23" } else { "18" })
+        .arg(if partial { "23" } else { "18" })
         .args([
             "-pix_fmt",
             "yuv420p",
@@ -1783,6 +2062,33 @@ mod tests {
         assert!(OUT.ends_with("docs/dead-end-job.mp4"));
         let name = OUT.rsplit('/').next().unwrap();
         assert!(!name.contains("-korean"));
+        assert!(OUT_1.ends_with("docs/dead-end-job-1.mp4"));
+        assert!(THUMB_1.ends_with("docs/youtube-dead-end-job-1.png"));
+    }
+
+    #[test]
+    fn part_one_stops_on_the_pause_after_the_tenth_line() {
+        let indexes = part_indexes(1);
+        assert_eq!(indexes, (0..PART_1_LINES).collect::<Vec<_>>());
+        assert_eq!(LESSONS[indexes[indexes.len() - 1]].say, "일당이 최소 두 배 높아집니다.");
+        let next = &LESSONS[PART_1_LINES];
+        assert!(next.say.starts_with("이 알바가"), "{}", next.say);
+        assert!(next.hear_at > LESSONS[9].pause_at);
+        let src = include_str!("dead_end.rs");
+        let build = src
+            .split("let tail = if indexes.len() < LESSONS.len()")
+            .nth(1)
+            .unwrap()
+            .split("if tail - cursor > 2")
+            .next()
+            .unwrap();
+        assert!(
+            build.contains("cursor") && !build.contains("frames_for(1.0)"),
+            "a partial cut must stop on the pause, not play one more second of the next line"
+        );
+        let run = src.split("fn run()").nth(1).unwrap().split("fn part_indexes").next().unwrap();
+        assert!(run.contains("--part="));
+        assert!(run.contains("part.is_some()"), "a part has no end card and no trailer tail");
     }
 
     #[test]
@@ -1801,7 +2107,8 @@ mod tests {
         let company_beats = lesson_beats(company);
         assert!(company_beats.iter().all(|b| b.kind != 'g'));
         assert_eq!(company.say, "거미인력.");
-        assert!(company.words.iter().any(|w| w.ko == "인력" && w.hanja == "人力"));
+        assert!(company.words.iter().any(|w| w.ko == "거미인력" && w.en == "Spider Staffing"));
+        assert!(company.words.iter().all(|w| w.ko != "거미" && w.ko != "인력"));
         assert_eq!(company_beats.first().unwrap().kind, 's');
         assert_eq!(company_beats.first().unwrap().spoken, "거미인력");
     }
@@ -1846,6 +2153,66 @@ mod tests {
         assert!(end.contains("END_KO"));
         assert!(!end.contains("FROM THE TRAILER"));
         assert!(!end.contains("end_kicker"));
+    }
+
+    #[test]
+    fn notes_match_toesa_and_a_long_card_scrolls() {
+        let src = include_str!("dead_end.rs");
+        let panel = src
+            .split("fn panel_draws")
+            .nth(1)
+            .unwrap()
+            .split("fn stage")
+            .next()
+            .unwrap();
+        assert!(panel.contains("18"), "vocab is 18, same as 퇴사");
+        assert!(panel.contains("16"), "meaning is 16, same as 퇴사");
+        assert!(!panel.contains(", 11, MUTED"), "section labels were shrunk to 11");
+        assert!(panel.contains("note.y - shift"), "a long card scrolls instead of shrinking");
+        assert!(
+            panel.contains("color={PAPER}:t=fill"),
+            "the sentence cover is missing, so a scrolled note shows through it"
+        );
+        let cover_at = panel.rfind("color={PAPER}:t=fill").unwrap();
+        let redraw_at = panel.rfind("draws.extend(sentence)").unwrap();
+        assert!(cover_at < redraw_at, "the sentence must be painted after the cover");
+        let lesson = &LESSONS[19];
+        let prep = Prepared {
+            beats: lesson_beats(lesson),
+            beat_times: (0..40).map(|i| i as f64).collect(),
+            hold_frames: 48,
+            wav: PathBuf::new(),
+        };
+        let rows = card_plan(&prep, &lesson);
+        let notes = note_layout(lesson, &rows);
+        let line_bottom = {
+            let longest = lesson.ko.iter().map(|s| s.chars().count()).max().unwrap_or(0);
+            let size: i32 = if lesson.ko.len() > 2 || longest > 11 {
+                24
+            } else if longest > 8 {
+                28
+            } else {
+                32
+            };
+            138 + lesson.ko.len() as i32 * (size + 6)
+        };
+        let floor = line_bottom + 18;
+        let stops = note_shift(&notes, floor);
+        assert!(!stops.is_empty(), "the long card never needed a scroll");
+        let mut shift = 0i32;
+        let mut si = 0usize;
+        for note in &notes {
+            while si < stops.len() && stops[si].0 <= note.at + 0.001 {
+                shift = stops[si].1;
+                si += 1;
+            }
+            let top = note.y - shift;
+            let bottom = top + note.h;
+            assert!(bottom <= 708, "note left the panel: {bottom}");
+            // The gap under the line is not the line. A note may sit in it.
+            // It may not cross the bottom of the sentence.
+            assert!(top >= line_bottom, "vocab scrolled onto the sentence: {top}");
+        }
     }
 
     #[test]
@@ -1904,8 +2271,9 @@ mod tests {
                 }
             }
         }
-        let spoken = speakable("시작하다 + 고 + 요 (starts, and)");
-        assert_eq!(spoken, "시작하다 고 요 starts, and");
+        let spoken = speakable_en("시작하다 + 고 + 요 (starts, and)");
+        assert_eq!(spoken, "starts, and");
+        assert!(!spoken.contains("시작하다"));
         assert!(!spoken.contains('/'));
     }
 
@@ -1923,8 +2291,9 @@ mod tests {
         assert!(hold.contains("loop=loop="), "that frame is held, not skipped");
         assert!(
             hold.contains("setpts=N*1001/24000/TB"),
-            "a short pause drops every frame if PTS stays on the source clock"
+            "the pause clock must be one output frame per spoken frame"
         );
+        assert!(hold.contains("scroll_spans"), "a long card is split, not scrolled by t");
         assert!(
             !hold.contains("setpts=N,fps"),
             "bare setpts=N drops a short pause, and the notes never appear"
