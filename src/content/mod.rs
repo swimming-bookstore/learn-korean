@@ -26,7 +26,7 @@ pub struct Lesson {
 pub const SERIES: &[(&str, &[Lesson])] = &[
     ("퇴사할게여", toesa::LESSONS),
     ("참교육", chamgyoyuk::LESSONS),
-    ("막다른 일자리", dead_end_job::LESSONS),
+    ("꿀알바", dead_end_job::LESSONS),
 ];
 
 pub fn all() -> impl Iterator<Item = &'static Lesson> {

@@ -2,8 +2,8 @@
 //!
 //! The picture plays once, on the left. The right side is remarks only.
 //! Korean lines come from the trailer audio, not from a translation.
-//! The company on the card is 거미인력, Spider Staffing. The series name
-//! 막다른 일자리 is the Korean title, not the company.
+//! The company on the card is 거미인력, Spider Staffing. The series title
+//! is 꿀알바, the gig in the trailer, not the company and not a dead end.
 //!
 //! A single speech-recognition pass breaks after about 20 seconds: the rest
 //! of the clip is dropped or garbled. Windows stay under that limit, and the
@@ -1249,7 +1249,7 @@ fn header_draws() -> Result<Vec<String>, String> {
     ];
     let kicker = write_text("h_kicker.txt", "Learn Korean with")?;
     draws.push(draw_line(FONT_B, &kicker, 16, "0x1E6F8A", 22, 20));
-    let title = write_text("h_title.txt", "막다른 일자리")?;
+    let title = write_text("h_title.txt", "꿀알바")?;
     draws.push(draw_line(FONT_KR, &title, 22, INK, 196, 16));
     Ok(draws)
 }
@@ -2064,6 +2064,19 @@ mod tests {
         assert!(!name.contains("-korean"));
         assert!(OUT_1.ends_with("docs/dead-end-job-1.mp4"));
         assert!(THUMB_1.ends_with("docs/youtube-dead-end-job-1.png"));
+        let src = include_str!("dead_end.rs");
+        let header = src
+            .split("fn header_draws")
+            .nth(1)
+            .unwrap()
+            .split("fn panel_draws")
+            .next()
+            .unwrap();
+        assert!(
+            header.contains("꿀알바"),
+            "the card title is 꿀알바"
+        );
+        assert!(!header.contains("막다른"), "the card title is not a dead end");
     }
 
     #[test]
